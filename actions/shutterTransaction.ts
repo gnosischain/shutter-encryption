@@ -1,8 +1,10 @@
-import { ProjPointType } from "@noble/curves/abstract/weierstrass";
+import { CurveType, ProjPointType } from "@noble/curves/abstract/weierstrass";
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { keccak256 } from "js-sha3";
 
 const blsSubgroupOrder = BigInt("0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffff00000001"); //TODO: verify c# equivalent
+
+type Fp12Type = ReturnType<typeof bls12_381.pairing>;
 
 function hash3(bytes: Uint8Array): bigint {
   const preimage = new Uint8Array(bytes.length + 1);
@@ -26,6 +28,21 @@ function computeC1(r: bigint) {
   //TODO: verify r is littleEndian
   const g2Generator = bls12_381.G2.ProjectivePoint.BASE;
   return g2Generator.multiply(r);
+}
+
+async function GTExp(x: Fp12Type, exp: bigint): Promise<Fp12Type> {
+  let result = bls12_381.fields.Fp12.ONE;
+  let acc = x;
+
+  while (exp > BigInt(0)) {
+    if (exp & BigInt(1)) {
+      result = bls12_381.fields.Fp12.mul(result, acc);
+    }
+    acc = bls12_381.fields.Fp12.sqr(acc);
+    exp >>= BigInt(1);
+  }
+
+  return result;
 }
 
 // function computeC2(sigma: Uint8Array, r: bigint, identity: ProjPointType<bigint>, eonKey: ProjPointType<any>) //TODO: replacing any type by Fp2 type
