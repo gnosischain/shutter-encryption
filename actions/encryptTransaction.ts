@@ -4,9 +4,7 @@ import { zip } from "lodash";
 
 import { ProjPointType } from "@noble/curves/abstract/weierstrass";
 
-const blsSubgroupOrder = BigInt(
-  "0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffff00000001"
-); //TODO: verify c# equivalent
+const blsSubgroupOrder = BigInt("0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffff00000001"); //TODO: verify c# equivalent
 
 function hash3(bytes: Uint8Array): bigint {
   const preimage = new Uint8Array(bytes.length + 1);
@@ -30,7 +28,7 @@ function hash3(bytes: Uint8Array): bigint {
 
 type Fp12Type = ReturnType<typeof bls12_381.pairing>;
 
-async function GTExp(x: Fp12Type, exp: bigint): Promise<Fp12Type> {
+function GTExp(x: Fp12Type, exp: bigint): Fp12Type {
   let result = bls12_381.fields.Fp12.ONE;
   let acc = x;
 
@@ -45,7 +43,7 @@ async function GTExp(x: Fp12Type, exp: bigint): Promise<Fp12Type> {
   return result;
 }
 
-async function computeR(sigma: Uint8Array, msg: Uint8Array): Promise<bigint> {
+function computeR(sigma: Uint8Array, msg: Uint8Array): bigint {
   const preimage = new Uint8Array(32 + msg.length);
   preimage.set(sigma);
   preimage.set(msg, 32);
@@ -57,19 +55,14 @@ function computeC1(r: bigint) {
   return g2Generator.multiply(r);
 }
 
-async function computeC2(
-  sigma: Uint8Array,
-  r: bigint,
-  identity: ProjPointType<bigint>,
-  eonKey: any
-) {
-  const p = await bls12_381.pairing(identity, eonKey);
-  const preimage = await GTExp(p, r);
-  const key = await hash2(preimage); // Implement hash2 based on your requirements
+function computeC2(sigma: Uint8Array, r: bigint, identity: ProjPointType<bigint>, eonKey: any) {
+  const p = bls12_381.pairing(identity, eonKey);
+  const preimage = GTExp(p, r);
+  const key = hash2(preimage); // Implement hash2 based on your requirements
   return xorBlocks(sigma, key); // Implement xorBlocks based on your requirements
 }
 
-async function hash2(p: any): Promise<Uint8Array> {
+function hash2(p: any): Uint8Array {
   // Perform the final exponentiation and convert to big-endian bytes
   const finalExp = (bls12_381.fields.Fp12 as any).finalExponentiate(p);
   const bigEndianBytes = finalExp.toBytesBE();
@@ -109,16 +102,11 @@ function padAndSplit(bytes: Uint8Array): Uint8Array[] {
   return result;
 }
 
-export async function encrypt(
-  msg: Uint8Array,
-  identity: ProjPointType<bigint>,
-  eonKey: any,
-  sigma: Uint8Array
-) {
-  const r = await computeR(sigma, msg);
+export async function encrypt(msg: Uint8Array, identity: ProjPointType<bigint>, eonKey: any, sigma: Uint8Array) {
+  const r = computeR(sigma, msg);
 
-  const c1 = await computeC1(r);
-  const c2 = await computeC2(sigma, r, identity, eonKey);
+  const c1 = computeC1(r);
+  const c2 = computeC2(sigma, r, identity, eonKey);
   const c3 = computeC3(padAndSplit(msg), sigma); // Implement computeC3 based on your requirements
 
   return {
@@ -129,10 +117,7 @@ export async function encrypt(
   };
 }
 
-function computeC3(
-  messageBlocks: Uint8Array[],
-  sigma: Uint8Array
-): Uint8Array[] {
+function computeC3(messageBlocks: Uint8Array[], sigma: Uint8Array): Uint8Array[] {
   const keys = computeBlockKeys(sigma, messageBlocks.length);
   return zip(keys, messageBlocks).map(([key, block]) => {
     if (key === undefined || block === undefined) {
