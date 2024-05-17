@@ -3,7 +3,7 @@ import clsx from "clsx";
 import * as React from "react";
 import { type BaseError, useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 
-const ENCRYPTION_CONTRACT = "0x0000000000000000000000000000000000000000";
+const SEQUENCER = "0x854ce9415d1Ee1d95ACf7d0F2c718AaA9A5894aa";
 
 export function SendTransaction() {
   const { data: hash, error, isPending, sendTransaction } = useSendTransaction();
@@ -12,7 +12,7 @@ export function SendTransaction() {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
     const data = formData.get("data") as `0x${string}`;
-    sendTransaction({ to: ENCRYPTION_CONTRACT, data });
+    sendTransaction({ to: SEQUENCER, data });
   }
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
