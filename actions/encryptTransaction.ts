@@ -30,7 +30,7 @@ function hash3(bytes: Uint8Array): bigint {
 
 type Fp12Type = ReturnType<typeof bls12_381.pairing>;
 
-async function GTExp(x: Fp12Type, exp: bigint): Promise<Fp12Type> {
+function GTExp(x: Fp12Type, exp: bigint): Fp12Type {
   let result = bls12_381.fields.Fp12.ONE;
   let acc = x;
 
@@ -45,7 +45,7 @@ async function GTExp(x: Fp12Type, exp: bigint): Promise<Fp12Type> {
   return result;
 }
 
-async function computeR(sigma: Uint8Array, msg: Uint8Array): Promise<bigint> {
+function computeR(sigma: Uint8Array, msg: Uint8Array): bigint {
   const preimage = new Uint8Array(32 + msg.length);
   preimage.set(sigma);
   preimage.set(msg, 32);
@@ -57,19 +57,19 @@ function computeC1(r: bigint) {
   return g2Generator.multiply(r);
 }
 
-async function computeC2(
+function computeC2(
   sigma: Uint8Array,
   r: bigint,
   identity: ProjPointType<bigint>,
   eonKey: any
 ) {
-  const p = await bls12_381.pairing(identity, eonKey);
-  const preimage = await GTExp(p, r);
-  const key = await hash2(preimage); // Implement hash2 based on your requirements
+  const p = bls12_381.pairing(identity, eonKey);
+  const preimage = GTExp(p, r);
+  const key = hash2(preimage); // Implement hash2 based on your requirements
   return xorBlocks(sigma, key); // Implement xorBlocks based on your requirements
 }
 
-async function hash2(p: any): Promise<Uint8Array> {
+function hash2(p: any): Uint8Array {
   // Perform the final exponentiation and convert to big-endian bytes
   const finalExp = (bls12_381.fields.Fp12 as any).finalExponentiate(p);
   const bigEndianBytes = finalExp.toBytesBE();
