@@ -109,26 +109,6 @@ function padAndSplit(bytes: Uint8Array): Uint8Array[] {
   return result;
 }
 
-export async function encrypt(
-  msg: Uint8Array,
-  identity: ProjPointType<bigint>,
-  eonKey: any,
-  sigma: Uint8Array
-) {
-  const r = await computeR(sigma, msg);
-
-  const c1 = await computeC1(r);
-  const c2 = await computeC2(sigma, r, identity, eonKey);
-  const c3 = computeC3(padAndSplit(msg), sigma); // Implement computeC3 based on your requirements
-
-  return {
-    VersionId: 0x2,
-    c1: c1,
-    c2: c2,
-    c3: c3,
-  };
-}
-
 function computeC3(
   messageBlocks: Uint8Array[],
   sigma: Uint8Array
@@ -162,3 +142,46 @@ function hash4(bytes: Uint8Array): Uint8Array {
   const hash = keccak256.arrayBuffer(preimage);
   return new Uint8Array(hash);
 }
+
+export async function encrypt(
+  msg: Uint8Array,
+  identity: ProjPointType<bigint>,
+  eonKey: any,
+  sigma: Uint8Array
+) {
+  const r = await computeR(sigma, msg);
+
+  const c1 = await computeC1(r);
+  const c2 = await computeC2(sigma, r, identity, eonKey);
+  const c3 = computeC3(padAndSplit(msg), sigma); // Implement computeC3 based on your requirements
+
+  return {
+    VersionId: 0x2,
+    c1: c1,
+    c2: c2,
+    c3: c3,
+  };
+}
+
+// test
+const tx = {
+  from: "0x3834a349678eF446baE07e2AefFC01054184af00",
+  gasPrice: "2500000000",
+  gas: "21000",
+  to: "0x3834a349678eF446baE07e2AefFC01054184af00",
+  value: "1000",
+  data: "",
+  nonce: "584",
+  chainId: "10200",
+  type: "0x0",
+};
+
+const jsonString = JSON.stringify(tx);
+
+// Step 2: Encode the JSON string to a Uint8Array
+const encoder = new TextEncoder();
+const uint8Array = encoder.encode(jsonString);
+
+console.log(uint8Array);
+
+const identity = "";
