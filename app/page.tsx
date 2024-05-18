@@ -1,14 +1,24 @@
 "use client";
 
+import { useEffect } from "react";
 import { useAccount, useDisconnect } from "wagmi";
 import ConnectButton from "./components/connectButton";
 import { Input } from "@headlessui/react";
 import clsx from "clsx";
 import { SendTransaction } from "./components/sendTransaction";
+import { testEncrypt } from "@/actions/encryptTransaction";
 
 export default function Home() {
   const account = useAccount();
   const { disconnect } = useDisconnect();
+
+  useEffect(() => {
+    const test = async () => {
+      const testTx = await testEncrypt();
+      console.log(testTx);
+    };
+    test();
+  }, []);
 
   console.log(account.status);
 
