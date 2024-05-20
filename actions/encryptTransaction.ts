@@ -1,21 +1,12 @@
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { zip } from "lodash";
-import {
-  stringToBytes,
-  hexToBytes,
-  toBytes,
-  type Address,
-  keccak256,
-  bytesToBigInt,
-  bytesToHex,
-  numberToBytes,
-} from "viem";
+import { stringToBytes, hexToBytes, toBytes, type Address, keccak256, bytesToBigInt, bytesToHex, numberToBytes } from "viem";
 
 import { ProjPointType } from "@noble/curves/abstract/weierstrass";
 
-const blsSubgroupOrder = BigInt(
-  "0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffff00000001"
-); //TODO: verify c# equivalent
+const blsSubgroupOrderBytes = [0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09, 0xa1, 0xd8, 0x05, 0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x01];
+
+const blsSubgroupOrder = bytesToBigInt(Uint8Array.from(blsSubgroupOrderBytes));
 
 type Fp12Type = ReturnType<typeof bls12_381.pairing>;
 
@@ -52,40 +43,32 @@ function computeR(sigma: Uint8Array, msg: Uint8Array): bigint {
 // {
 //     return G2.generator().mult(r.ToLittleEndian());
 // }
+
 function computeC1(r: bigint) {
   const g2Generator = bls12_381.G2.ProjectivePoint.BASE;
 
-  // r.toLittleEndian
-  const rLitteEndian = bigintToLittleEndianBigint(r);
+  // Convert r to little-endian bytes
+  const rLittleEndianBytes = bigintToLittleEndianBytes(r, 32);
 
-  return g2Generator.multiply(rLitteEndian % bls12_381.G1.CURVE.n);
-}
+  // Convert little-endian bytes to bigint
+  const rLittleEndian = bytesToBigInt(rLittleEndianBytes.reverse());
 
-function bigintToLittleEndianBigint(bigint: bigint): bigint {
-  const bytes1 = numberToBytes(bigint, { size: 32 });
-
-  // Process each 8-byte segment separately
-  for (let i = 0; i < 32; i += 8) {
-    reverseSegment(bytes1, i, 8);
+  // Validate rLittleEndian is within the expected range
+  if (rLittleEndian <= BigInt(0) || rLittleEndian >= bls12_381.G2.CURVE.n) {
+    throw new Error(`Invalid value for rLittleEndian: ${rLittleEndian}`);
   }
 
-  const bytes2 = bytes1.reverse();
-  return bytesToBigInt(bytes2, { size: 32 });
+  // Multiply the G2 generator by rLittleEndian
+  return g2Generator.multiply(rLittleEndian);
 }
 
-function reverseSegment(
-  bytes: Uint8Array,
-  start: number,
-  length: number
-): void {
-  let end = start + length - 1;
-  while (start < end) {
-    let temp = bytes[start];
-    bytes[start] = bytes[end];
-    bytes[end] = temp;
-    start++;
-    end--;
+function bigintToLittleEndianBytes(bigint: bigint, length: number): Uint8Array {
+  const bytes = new Uint8Array(length);
+  for (let i = 0; i < length; i++) {
+    bytes[i] = Number(bigint & BigInt(0xff));
+    bigint >>= BigInt(8);
   }
+  return bytes;
 }
 
 // function bigintToLittleEndianBytes(bigint: bigint, length: number): Uint8Array {
@@ -104,12 +87,7 @@ function reverseSegment(
 //     Bytes32 key = ShutterCrypto.Hash2(preimage);
 //     return ShutterCrypto.XorBlocks(sigma, key);
 // }
-function computeC2(
-  sigma: Uint8Array,
-  r: bigint,
-  identity: ProjPointType<bigint>,
-  eonKey: ProjPointType<any>
-) {
+function computeC2(sigma: Uint8Array, r: bigint, identity: ProjPointType<bigint>, eonKey: ProjPointType<any>) {
   const p = bls12_381.pairing(identity, eonKey);
   const preimage = GTExp(p, r);
   const key = hash2(preimage); // Implement hash2 based on your requirements
@@ -142,10 +120,7 @@ function padAndSplit(bytes: Uint8Array): Uint8Array[] {
   return result;
 }
 
-function computeC3(
-  messageBlocks: Uint8Array[],
-  sigma: Uint8Array
-): Uint8Array[] {
+function computeC3(messageBlocks: Uint8Array[], sigma: Uint8Array): Uint8Array[] {
   const keys = computeBlockKeys(sigma, messageBlocks.length);
   return zip(keys, messageBlocks).map(([key, block]) => {
     if (key === undefined || block === undefined) {
@@ -204,9 +179,7 @@ function hash3(bytes: Uint8Array): bigint {
   preimage[0] = 0x3;
   preimage.set(bytes, 1);
   const hash = keccak256(preimage, "bytes");
-
-  const bigIntHash = bytesToBigInt(hash, { size: 32 });
-
+  const bigIntHash = bytesToBigInt(hash.reverse());
   const result = bigIntHash % blsSubgroupOrder;
 
   return result;
@@ -246,9 +219,7 @@ function fp12ToBigEndianBytes(fp12: any): Uint8Array {
   collectComponents(fp12);
 
   // Convert each bigint to a big-endian byte array and concatenate them
-  const byteArrays = components.map((bigint) =>
-    bigintToBigEndianBytes(bigint, 48)
-  ); // Assuming 48 bytes per component
+  const byteArrays = components.map((bigint) => bigintToBigEndianBytes(bigint, 48)); // Assuming 48 bytes per component
   const totalLength = byteArrays.reduce((acc, val) => acc + val.length, 0);
   const result = new Uint8Array(totalLength);
   let offset = 0;
@@ -292,10 +263,17 @@ export async function encrypt(
   sigma: Uint8Array
 ) {
   const r = await computeR(sigma, msg);
+  // const r = BigInt("10226387388318877658859991757275660158882386537905184338383987110117614172907");
+
+  // console.log(bytesToHex(sigma));
+  // console.log(bytesToHex(msg));
+  // console.log(r);
 
   const c1 = await computeC1(r);
   const c2 = await computeC2(sigma, r, identity, eonKey);
   const c3 = computeC3(padAndSplit(msg), sigma); // Implement computeC3 based on your requirements
+
+  console.log(bytesToHex(c2));
 
   return {
     VersionId: 0x2,
@@ -385,31 +363,19 @@ function computeIdentityFromPreimage(bytes: Uint8Array): any {
 
 export async function testEncrypt() {
   // rawTxHex, string senderAddress, string identityPrefixHex, string eonKeyHex, string sigmaHex
-  const rawTxHex =
-    "f869820248849502f900825208943834a349678ef446bae07e2aeffc01054184af008203e880824fd3a001e44318458b1f279bf81aef969df1b9991944bf8b9d16fd1799ed5b0a7986faa058f572cce63aaff3326df9c902d338b0c416c8fb93109446d6aadd5a65d3d115";
+  const rawTxHex = "f869820248849502f900825208943834a349678ef446bae07e2aeffc01054184af008203e880824fd3a001e44318458b1f279bf81aef969df1b9991944bf8b9d16fd1799ed5b0a7986faa058f572cce63aaff3326df9c902d338b0c416c8fb93109446d6aadd5a65d3d115";
   const senderAddress = "3834a349678eF446baE07e2AefFC01054184af00";
-  const identityPrefixHex =
-    "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
-  const eonKeyHex =
-    "B068AD1BE382009AC2DCE123EC62DCA8337D6B93B909B3EE52E31CB9E4098D1B56D596BF3C08166C7B46CB3AA85C23381380055AB9F1A87786F2508F3E4CE5CAA5ABCDAE0A80141EE8CCC3626311E0A53BE5D873FA964FD85AD56771F2984579";
-  const sigmaHex =
-    "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
+  const identityPrefixHex = "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
+  const eonKeyHex = "B068AD1BE382009AC2DCE123EC62DCA8337D6B93B909B3EE52E31CB9E4098D1B56D596BF3C08166C7B46CB3AA85C23381380055AB9F1A87786F2508F3E4CE5CAA5ABCDAE0A80141EE8CCC3626311E0A53BE5D873FA964FD85AD56771F2984579";
+  const sigmaHex = "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
 
   const txBytes = hexToBytes(`0x${rawTxHex}`);
 
-  const identity = computeIdentity(
-    hexToBytes(`0x${identityPrefixHex}`, { size: 32 }),
-    hexToBytes(`0x${senderAddress}`)
-  );
+  const identity = computeIdentity(hexToBytes(`0x${identityPrefixHex}`, { size: 32 }), hexToBytes(`0x${senderAddress}`));
 
   console.log(identity);
 
-  const encryptedMessage = await encrypt(
-    txBytes,
-    identity,
-    bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex),
-    hexToBytes(`0x${sigmaHex}`, { size: 32 })
-  );
+  const encryptedMessage = await encrypt(txBytes, identity, bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex), hexToBytes(`0x${sigmaHex}`, { size: 32 }));
 
   console.log(encryptedMessage);
 
@@ -430,13 +396,6 @@ export async function testEncrypt() {
   // ===============================================================
   //
   //
-  //
-  // result:
-  // 02
-  // 939D3892FE790041D9D45EEDCCD7115BF67BF21CB816DA2D2EF982BE9DD86F5CB11713DE7D10F11DE1ACEE31E73E73150A029222542D86A792C2733082DB78A7DEC9A38B68C083C5AEBC010E52E12F271C736967D835F41D5DFFA340E7C0757AD3D29FC1483FE3489F82E1F20D4FCC0045A96B8CD0ED1EBF26B66AC9967A822E
-  //
-  // 8258DBDFF56ACC2F1A7C4E978C515A288BE09451EEE79B47E551F30F
-  // 5B632C18FD43434574E0101FF74525CA254C1288AFB615B491A00452BD565F40DED22A8138F684DE2D21C26D2B48A439C3200FB4A172D76DBDE1228542FF3ABBF4EC09F1BFFAE3861F6CD187269FD1983CC9BB25122E37A2C21C33AD9590865B54EAA0B5
 }
 
 // internal static byte[] EncodeEncryptedMessage(EncryptedMessage encryptedMessage)
@@ -469,7 +428,7 @@ function encodeEncryptedMessage(
   console.log("===== C1");
   console.log(encryptedMessage.c1);
   console.log(typeof encryptedMessage.c1);
-  bytes.set(encryptedMessage.c1.toRawBytes(false), 1);
+  bytes.set(encryptedMessage.c1.toRawBytes(true), 1);
 
   bytes.set(encryptedMessage.c2, 1 + c1Length);
 
