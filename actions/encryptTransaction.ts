@@ -9,6 +9,7 @@ import {
   bytesToBigInt,
   bytesToHex,
   numberToBytes,
+  numberToHex,
 } from "viem";
 
 import { ProjPointType } from "@noble/curves/abstract/weierstrass";
@@ -106,9 +107,23 @@ function computeC2(
   identity: ProjPointType<bigint>,
   eonKey: ProjPointType<any>
 ) {
-  const p = bls12_381.pairing(identity, eonKey);
+  // console.log("identity", identity.toHex()); // Identity OK
+  // console.log("eonKey", eonKey.toHex()); // EonKey OK
+  const p = bls12_381.pairing(identity, eonKey, false);
+
+  // just check
+  // const newP = fp12ToBigEndianBytes(p);
+  // console.log("newP", bytesToHex(newP));
+
+  const pBytes = bls12_381.fields.Fp12.toBytes(p);
+  // console.log("pBytes", pBytes);
+  const hexBytes = bytesToHex(pBytes);
+  // console.log("hexBytes P", hexBytes);
   const preimage = GTExp(p, r);
+
+  // console.log("preimage", preimage.toHex());
   const key = hash2(preimage); // Implement hash2 based on your requirements
+  console.log("key", bytesToHex(key));
   return xorBlocks(sigma, key); // Implement xorBlocks based on your requirements
 }
 
@@ -175,16 +190,36 @@ function hash2(p: any): Uint8Array {
   // Perform the final exponentiation and convert to big-endian bytes
   const finalExp = (bls12_381.fields.Fp12 as any).finalExponentiate(p);
 
-  console.log(finalExp);
+  console.log("===final checkk");
+  const pBytes = bls12_381.fields.Fp12.toBytes(finalExp);
+  // console.log("pBytes", pBytes);
+  // const hexBytes = bytesToHex(pBytes);
+  // console.log("final exp", hexBytes);
 
-  const bigEndianBytes = fp12ToBigEndianBytes(finalExp);
+  // const bigEndianBytes = fp12ToBigEndianBytes(finalExp);
+  // const bigEndianTest = hexToBytes(
+  //   // from NETHERMIND
+  //   "0x140D7B94BD5C83A91BBC505AE74439482AE9440367116FC5D85DDBECEC97EF1C00AA39C4967830C83872B32784B31F9703ED96C7ED88CD25C269B9DB1B812057D2AC8D53325C41874C1B56E46A504EF69D9BA38956E15F41EA44130BFB3957AC162F011BECDF159C3AD3DDB24AD0D1868465D8DED07A5CF3830B52F929F49A964874736986DCC5FEE0359040494516BC09345A51A06838C8CE5DDEBE016416606025596B57972EFC1BC6103658E93A7DDF3A9CBD067BBB718B33AA0E3E8C488B116FB5C7110B07A40A0BDEB79B91AE1E049E86BFC2DC1D8920934C9DC44F17711C7EFD120BD73FBAB29499D8CAED5D2A109C1299A0CD290C38633C51E4871746B139E3325C4C2D6633FFC53D36C505218F25FEC3B27E35E6A2DFE100F806EF4E155A5EB4494E2591E33110B497022BC8D3D5D139CFE95390A298B5083E532FFCFEBB493EB8715163FF9F1AED002707C6113D6E732EC4DE781E2A95865E0A1BE85F5BC39331E33228EEE285D2BC291DA54D9A5FCC917D6D975CF174A4017F7FA918C3B1521AA43A4A6F1AA72269EAF9875E4322D0A4632A97896D67A398E00265EFDC3D87DE9AE0DE9CFD790598B02B2C06310E19771ED0BD8428BEAAF12D004BDCE337DDFF761008856DA826E027B68DB06B79C7053D0D0BDF9DD63EA920EA7F00D324D1E6E750E2667E0D8EFCEADAC1D4FAAEE2A16CDD37570B399315A3440FF89688453A861D8196069E00F132D336190F814D43FB4C1BD891A12CA105B3009307CDCE2A23E0F268CCC3A7020DEA642A6752D22EDE1E4E8FF294A2893AE976"
+  // );
+
+  // console.log("===bigEndianBytes", bytesToHex(bigEndianBytes));
 
   // Create the preimage with a prefix byte
-  const preimage = new Uint8Array(1 + bigEndianBytes.length);
-  preimage[0] = 0x2;
-  preimage.set(bigEndianBytes, 1);
+  // const preimage = new Uint8Array(1 + bigEndianBytes.length);
+  // preimage[0] = 0x2;
+  // preimage.set(bigEndianBytes, 1);
 
-  return keccak256(preimage, "bytes");
+  // test
+  const preimageTest = new Uint8Array(1 + pBytes.length);
+  preimageTest[0] = 0x2;
+  preimageTest.set(pBytes, 1);
+
+  console.log("===preimage", bytesToHex(preimageTest));
+
+  // to delete
+  const res = keccak256(preimageTest, "bytes"); // this works
+
+  return keccak256(preimageTest, "bytes");
 }
 
 // public static void Hash3(ReadOnlySpan<byte> bytes, out UInt256 res)
@@ -223,36 +258,36 @@ function hash4(bytes: Uint8Array): Uint8Array {
 }
 
 function fp12ToBigEndianBytes(fp12: any): Uint8Array {
-  const components: bigint[] = [];
+  const bytes = bls12_381.fields.Fp12.toBytes(fp12);
 
-  // Recursive function to collect all bigint components
-  function collectComponents(obj: any) {
-    if (typeof obj === "bigint") {
-      components.push(obj); // Collect the bigint
-    } else if (typeof obj === "object" && obj !== null) {
-      // Recurse into each property if it's an object
-      for (const key of Object.keys(obj)) {
-        collectComponents(obj[key]);
-      }
-    }
-  }
-  // Start collecting components from the fp12 object
-  collectComponents(fp12);
+  return bytes.reverse();
 
-  // Convert each bigint to a big-endian byte array and concatenate them
-  const byteArrays = components.map((bigint) =>
-    bigintToBigEndianBytes(bigint, 48)
-  ); // Assuming 48 bytes per component
-  const totalLength = byteArrays.reduce((acc, val) => acc + val.length, 0);
-  const result = new Uint8Array(totalLength);
-  let offset = 0;
-
-  for (const bytes of byteArrays) {
-    result.set(bytes, offset);
-    offset += bytes.length;
-  }
-
-  return result;
+  // const components: bigint[] = [];
+  // // Recursive function to collect all bigint components
+  // function collectComponents(obj: any) {
+  //   if (typeof obj === "bigint") {
+  //     components.push(obj); // Collect the bigint
+  //   } else if (typeof obj === "object" && obj !== null) {
+  //     // Recurse into each property if it's an object
+  //     for (const key of Object.keys(obj)) {
+  //       collectComponents(obj[key]);
+  //     }
+  //   }
+  // }
+  // // Start collecting components from the fp12 object
+  // collectComponents(fp12);
+  // // Convert each bigint to a big-endian byte array and concatenate them
+  // const byteArrays = components.map((bigint) =>
+  //   bigintToBigEndianBytes(bigint, 48)
+  // ); // Assuming 48 bytes per component
+  // const totalLength = byteArrays.reduce((acc, val) => acc + val.length, 0);
+  // const result = new Uint8Array(totalLength);
+  // let offset = 0;
+  // for (const bytes of byteArrays) {
+  //   result.set(bytes, offset);
+  //   offset += bytes.length;
+  // }
+  // return result;
 }
 
 // Helper function to convert a bigint to a big-endian byte array
@@ -286,17 +321,9 @@ export async function encrypt(
   sigma: Uint8Array
 ) {
   const r = await computeR(sigma, msg);
-  // const r = BigInt("10226387388318877658859991757275660158882386537905184338383987110117614172907");
-
-  // console.log(bytesToHex(sigma));
-  // console.log(bytesToHex(msg));
-  // console.log(r);
-
   const c1 = await computeC1(r);
   const c2 = await computeC2(sigma, r, identity, eonKey);
   const c3 = computeC3(padAndSplit(msg), sigma); // Implement computeC3 based on your requirements
-
-  console.log(bytesToHex(c2));
 
   return {
     VersionId: 0x2,
@@ -331,6 +358,9 @@ export async function encrypt(
 function computeIdentity(identityPrefix: Uint8Array, sender: Uint8Array): any {
   const combinedLength = 52; // identityPrefix.length + sender.length;
   const preimage = new Uint8Array(combinedLength);
+  console.log("identityPrefix", bytesToHex(identityPrefix));
+  console.log("identityPrefix Bigint", bytesToBigInt(identityPrefix));
+  console.log("sender", bytesToHex(sender));
   preimage.set(identityPrefix);
   // preimage.set(sender, identityPrefix.length);
   preimage.set(sender, 32);
@@ -338,22 +368,71 @@ function computeIdentity(identityPrefix: Uint8Array, sender: Uint8Array): any {
   return computeIdentityFromPreimage(preimage);
 }
 
+function computeIdentity2(identityPrefixHex: string, senderAddress: string) {
+  // const identityPrefixBytes = hexToBytes(`0x${identityPrefixHex}`, { size: 32 });
+  // const senderBytes = hexToBytes(`0x${senderAddress}`);
+  // const preimage = new Uint8Array(53);
+  // preimage[0] = 0x1;
+  // preimage.set(identityPrefixBytes, 1);
+  // preimage.set(senderBytes, 33);
+
+  // return computeIdentityFromPreimage(preimage);
+
+  const preimage = identityPrefixHex + senderAddress;
+  console.log("preimage", preimage);
+  return computeIdentityFromPreimage2(preimage);
+}
+
 function computeIdentityFromPreimage(bytes: Uint8Array): any {
+  // console.log("computeIdentityFromPreimage ======");
   // const preimage = new Uint8Array(bytes.length + 1);
   const preimage = new Uint8Array(53);
   preimage[0] = 0x1;
   preimage.set(bytes, 1);
 
+  // console.log("preimage", bytesToBigInt(preimage));
+
   const hash = keccak256(preimage, "bytes");
+  // console.log("hash", bytesToBigInt(hash));
   hash.reverse();
+  // console.log("hash", bytesToBigInt(hash));
 
   const hashBigInt = bytesToBigInt(hash) % bls12_381.G1.CURVE.n;
+  // console.log("hashBigInt", hashBigInt);
 
   // const bigIntHash = BigInt("0x" + Buffer.from(hash).toString("hex"));
+
+  // const result = bls12_381.G1.ProjectivePoint.BASE.multiply(hashBigInt);
+  // console.log("result", result.toHex());
 
   return bls12_381.G1.ProjectivePoint.BASE.multiply(hashBigInt);
 }
 
+function computeIdentityFromPreimage2(bytesString: string): any {
+  // console.log("computeIdentityFromPreimage ======");
+  // const preimage = new Uint8Array(bytes.length + 1);
+  // const preimage = new Uint8Array(53);
+  // preimage[0] = 0x1;
+  // preimage.set(bytes, 1);
+  const preimage = "0x1" + bytesString;
+
+  // console.log("preimage", preimage);
+
+  const hash = keccak256(preimage as `0x${string}`, "bytes");
+  // console.log("hash before reverse", bytesToBigInt(hash));
+  // hash.reverse();
+  // console.log("hash after reverse", bytesToBigInt(hash));
+
+  const hashBigInt = bytesToBigInt(hash) % bls12_381.G1.CURVE.n;
+  // console.log("hashBigInt", hashBigInt);
+
+  // const bigIntHash = BigInt("0x" + Buffer.from(hash).toString("hex"));
+
+  // const result = bls12_381.G1.ProjectivePoint.BASE.multiply(hashBigInt);
+  // console.log("result", result.toHex());
+
+  return bls12_381.G1.ProjectivePoint.BASE.multiply(hashBigInt);
+}
 // [Test][
 //   TestCase(
 //     "f869820248849502f900825208943834a349678ef446bae07e2aeffc01054184af008203e880824fd3a001e44318458b1f279bf81aef969df1b9991944bf8b9d16fd1799ed5b0a7986faa058f572cce63aaff3326df9c902d338b0c416c8fb93109446d6aadd5a65d3d115",
@@ -391,6 +470,13 @@ export async function testEncrypt() {
   const senderAddress = "3834a349678eF446baE07e2AefFC01054184af00";
   const identityPrefixHex =
     "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
+
+  // const identityPrefixBytes = numberToBytes(
+  //   BigInt(
+  //     "23619571968023848331766184902370628094969430394214807609768563618282746360888"
+  //   )
+  // );
+
   const eonKeyHex =
     "B068AD1BE382009AC2DCE123EC62DCA8337D6B93B909B3EE52E31CB9E4098D1B56D596BF3C08166C7B46CB3AA85C23381380055AB9F1A87786F2508F3E4CE5CAA5ABCDAE0A80141EE8CCC3626311E0A53BE5D873FA964FD85AD56771F2984579";
   const sigmaHex =
@@ -398,12 +484,15 @@ export async function testEncrypt() {
 
   const txBytes = hexToBytes(`0x${rawTxHex}`);
 
-  const identity = computeIdentity(
-    hexToBytes(`0x${identityPrefixHex}`, { size: 32 }),
-    hexToBytes(`0x${senderAddress}`)
-  );
+  // const identity = computeIdentity(
+  //   hexToBytes(`0x${identityPrefixHex}`, { size: 32 }),
+  //   // identityPrefixBytes,
+  //   hexToBytes(`0x${senderAddress}`)
+  // );
 
-  console.log(identity);
+  const identity = computeIdentity2(identityPrefixHex, senderAddress);
+
+  console.log("IDENTITY", identity);
 
   const encryptedMessage = await encrypt(
     txBytes,
@@ -412,7 +501,7 @@ export async function testEncrypt() {
     hexToBytes(`0x${sigmaHex}`, { size: 32 })
   );
 
-  console.log(encryptedMessage);
+  // console.log(encryptedMessage);
 
   const encoded: Uint8Array = encodeEncryptedMessage(encryptedMessage);
 
@@ -424,23 +513,30 @@ export async function testEncrypt() {
   // ===============================================================
   // should be:
   // 02
-  // B695A53BC2AB868E02786730030F78FA4CD3A24169966BCE28D6F2B2A73A8DAF9C1C57890
+  // c1 B695A53BC2AB868E02786730030F78FA4CD3A24169966BCE28D6F2B2A73A8DAF9C1C57890
 
   // CA24680DE84A175F67E4DD00E0FBC7531A017EBD4183E2C66B2726AA16C393A0D44BE40803EC1
 
-  // AFBE9F76BB0FD610E81E64760420008769E81799CB
+  // c3 AFBE9F76BB0FD610E81E64760420008769E81799CB
   // 13EF2CFF94E7F4D809F4BC8B38599F940D25AC209A9661ED90A71562F3EC2CF1
-  //
+
   // 8258DBDFF56ACC2F1A7C4E978C515A288BE09451EEE79B47E551F30F
   // 5B632C18FD43434574E0101FF74525CA254C1288AFB615B491A00452BD565F40DED22A8138F684DE2D21C26D2B48A439C3200FB4A172D76DBDE1228542FF3ABBF4EC09F1BFFAE3861F6CD187269FD1983CC9BB25122E37A2C21C33AD9590865B54EAA0B5
   // ===============================================================
   //
 
-  // 02
-  // 1629D5BC70F4F7C59CF2FD9D9C18FAFAA247CF694513FCB0A6670EE9840F388635C14CC3B5362F368108289176006619119FFE03C61AC6FC09A5ED8CA58B6E38BEFB6A8008E0B4BA2356E2D500EBD689CC76A4E0A938C7262E07EC1F8EA1F5AF595B66CB9DECA53F051B6E3B1A4B3B24E86C9C98AA29E869CF053C3E502B6A22
-  // 8258DBDFF56ACC2F1A7C4E978C515A288BE09451EEE79B47E551F30F
-  // 5B632C18FD43434574E0101FF74525CA254C1288AFB615B491A00452BD565F40DED22A8138F684DE2D21C26D2B48A439C3200FB4A172D76DBDE1228542FF3ABBF4EC09F1BFFAE3861F6CD187269FD1983CC9BB25122E37A2C21C33AD9590865B54EAA0B5
-  //
+  // 0X0
+  // 2B695A53BC2AB868E02786730030F78FA4CD3A24169966BCE28D6F2B2A73A8DAF9C1C57890
+  // CA24680DE84A175F67E4DD00E0FBC7531A017EBD4183E2C66B2726AA16C393A0D44BE40803EC1
+  // AFBE9F76BB0FD610E81E64760420008769E81799CB
+  // 13EF2CFF94E7F4D809F4BC8B38599F940D25AC209A9661ED90A71562F3EC2CF1
+
+  // 0X02
+  // B695A53BC2AB868E02786730030F78FA4CD3A24169966BCE28D6F2B2A73A8DAF9C1C57890
+  // CA24680DE84A175F67E4DD00E0FBC7531A017EBD4183E2C66B2726AA16C393A0D44BE40803EC1
+
+  // AFBE9F76BB0FD610E81E64760420008769E81799CB
+  // 181DD14B69A06F080C4946E419745E7156852D0B6691B4069F39B25367A9398C
 }
 
 // internal static byte[] EncodeEncryptedMessage(EncryptedMessage encryptedMessage)
