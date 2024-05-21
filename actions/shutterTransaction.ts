@@ -2,7 +2,11 @@ import { CurveType, ProjPointType } from "@noble/curves/abstract/weierstrass";
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { keccak256 } from "js-sha3";
 
-const blsSubgroupOrder = BigInt("0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffff00000001"); //TODO: verify c# equivalent
+// const blsSubgroupOrder = BigInt("0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffff00000001"); //TODO: verify c# equivalent
+
+const blsSubgroupOrder = BigInt(
+  "52435875175126190479447740508185965837690552500527637822603658699938581184513"
+);
 
 type Fp12Type = ReturnType<typeof bls12_381.pairing>;
 
