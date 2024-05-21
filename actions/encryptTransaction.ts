@@ -1,10 +1,23 @@
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { zip } from "lodash";
-import { stringToBytes, hexToBytes, toBytes, type Address, keccak256, bytesToBigInt, bytesToHex, numberToBytes } from "viem";
+import {
+  stringToBytes,
+  hexToBytes,
+  toBytes,
+  type Address,
+  keccak256,
+  bytesToBigInt,
+  bytesToHex,
+  numberToBytes,
+} from "viem";
 
 import { ProjPointType } from "@noble/curves/abstract/weierstrass";
 
-const blsSubgroupOrderBytes = [0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09, 0xa1, 0xd8, 0x05, 0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x01];
+const blsSubgroupOrderBytes = [
+  0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09,
+  0xa1, 0xd8, 0x05, 0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff,
+  0xff, 0xff, 0x00, 0x00, 0x00, 0x01,
+];
 
 const blsSubgroupOrder = bytesToBigInt(Uint8Array.from(blsSubgroupOrderBytes));
 
@@ -87,7 +100,12 @@ function bigintToLittleEndianBytes(bigint: bigint, length: number): Uint8Array {
 //     Bytes32 key = ShutterCrypto.Hash2(preimage);
 //     return ShutterCrypto.XorBlocks(sigma, key);
 // }
-function computeC2(sigma: Uint8Array, r: bigint, identity: ProjPointType<bigint>, eonKey: ProjPointType<any>) {
+function computeC2(
+  sigma: Uint8Array,
+  r: bigint,
+  identity: ProjPointType<bigint>,
+  eonKey: ProjPointType<any>
+) {
   const p = bls12_381.pairing(identity, eonKey);
   const preimage = GTExp(p, r);
   const key = hash2(preimage); // Implement hash2 based on your requirements
@@ -120,7 +138,10 @@ function padAndSplit(bytes: Uint8Array): Uint8Array[] {
   return result;
 }
 
-function computeC3(messageBlocks: Uint8Array[], sigma: Uint8Array): Uint8Array[] {
+function computeC3(
+  messageBlocks: Uint8Array[],
+  sigma: Uint8Array
+): Uint8Array[] {
   const keys = computeBlockKeys(sigma, messageBlocks.length);
   return zip(keys, messageBlocks).map(([key, block]) => {
     if (key === undefined || block === undefined) {
@@ -219,7 +240,9 @@ function fp12ToBigEndianBytes(fp12: any): Uint8Array {
   collectComponents(fp12);
 
   // Convert each bigint to a big-endian byte array and concatenate them
-  const byteArrays = components.map((bigint) => bigintToBigEndianBytes(bigint, 48)); // Assuming 48 bytes per component
+  const byteArrays = components.map((bigint) =>
+    bigintToBigEndianBytes(bigint, 48)
+  ); // Assuming 48 bytes per component
   const totalLength = byteArrays.reduce((acc, val) => acc + val.length, 0);
   const result = new Uint8Array(totalLength);
   let offset = 0;
@@ -363,19 +386,31 @@ function computeIdentityFromPreimage(bytes: Uint8Array): any {
 
 export async function testEncrypt() {
   // rawTxHex, string senderAddress, string identityPrefixHex, string eonKeyHex, string sigmaHex
-  const rawTxHex = "f869820248849502f900825208943834a349678ef446bae07e2aeffc01054184af008203e880824fd3a001e44318458b1f279bf81aef969df1b9991944bf8b9d16fd1799ed5b0a7986faa058f572cce63aaff3326df9c902d338b0c416c8fb93109446d6aadd5a65d3d115";
+  const rawTxHex =
+    "f869820248849502f900825208943834a349678ef446bae07e2aeffc01054184af008203e880824fd3a001e44318458b1f279bf81aef969df1b9991944bf8b9d16fd1799ed5b0a7986faa058f572cce63aaff3326df9c902d338b0c416c8fb93109446d6aadd5a65d3d115";
   const senderAddress = "3834a349678eF446baE07e2AefFC01054184af00";
-  const identityPrefixHex = "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
-  const eonKeyHex = "B068AD1BE382009AC2DCE123EC62DCA8337D6B93B909B3EE52E31CB9E4098D1B56D596BF3C08166C7B46CB3AA85C23381380055AB9F1A87786F2508F3E4CE5CAA5ABCDAE0A80141EE8CCC3626311E0A53BE5D873FA964FD85AD56771F2984579";
-  const sigmaHex = "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
+  const identityPrefixHex =
+    "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
+  const eonKeyHex =
+    "B068AD1BE382009AC2DCE123EC62DCA8337D6B93B909B3EE52E31CB9E4098D1B56D596BF3C08166C7B46CB3AA85C23381380055AB9F1A87786F2508F3E4CE5CAA5ABCDAE0A80141EE8CCC3626311E0A53BE5D873FA964FD85AD56771F2984579";
+  const sigmaHex =
+    "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
 
   const txBytes = hexToBytes(`0x${rawTxHex}`);
 
-  const identity = computeIdentity(hexToBytes(`0x${identityPrefixHex}`, { size: 32 }), hexToBytes(`0x${senderAddress}`));
+  const identity = computeIdentity(
+    hexToBytes(`0x${identityPrefixHex}`, { size: 32 }),
+    hexToBytes(`0x${senderAddress}`)
+  );
 
   console.log(identity);
 
-  const encryptedMessage = await encrypt(txBytes, identity, bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex), hexToBytes(`0x${sigmaHex}`, { size: 32 }));
+  const encryptedMessage = await encrypt(
+    txBytes,
+    identity,
+    bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex),
+    hexToBytes(`0x${sigmaHex}`, { size: 32 })
+  );
 
   console.log(encryptedMessage);
 
@@ -406,29 +441,6 @@ export async function testEncrypt() {
   // 8258DBDFF56ACC2F1A7C4E978C515A288BE09451EEE79B47E551F30F
   // 5B632C18FD43434574E0101FF74525CA254C1288AFB615B491A00452BD565F40DED22A8138F684DE2D21C26D2B48A439C3200FB4A172D76DBDE1228542FF3ABBF4EC09F1BFFAE3861F6CD187269FD1983CC9BB25122E37A2C21C33AD9590865B54EAA0B5
   //
-<<<<<<< HEAD
-  //
-  // result:
-  // 02
-  // 939D3892FE790041D9D45EEDCCD7115BF67BF21CB816DA2D2EF982BE9DD86F5CB11713DE7D10F11DE1ACEE31E73E73150A029222542D86A792C2733082DB78A7DEC9A38B68C083C5AEBC010E52E12F271C736967D835F41D5DFFA340E7C0757AD3D29FC1483FE3489F82E1F20D4FCC0045A96B8CD0ED1EBF26B66AC9967A822E
-  //
-  // 8258DBDFF56ACC2F1A7C4E978C515A288BE09451EEE79B47E551F30F
-  // 5B632C18FD43434574E0101FF74525CA254C1288AFB615B491A00452BD565F40DED22A8138F684DE2D21C26D2B48A439C3200FB4A172D76DBDE1228542FF3ABBF4EC09F1BFFAE3861F6CD187269FD1983CC9BB25122E37A2C21C33AD9590865B54EAA0B5
-
-  // c2 in typescript: 0xd3d29fc1483fe3489f82e1f20d4fcc0045a96b8cd0ed1ebf26b66ac9967a822e
-  // c2 in Nethermind: 0x13ef2cff94e7f4d809f4bc8b38599f940d25ac209a9661ed90a71562f3ec2cf1
-
-  // 0X02
-  // B695A53BC2AB868E02786730030F78FA4CD3A24169966BCE28D6F2B2A73A8DAF9C1C57890
-  // CA24680DE84A175F67E4DD00E0FBC7531A017EBD4183E2C66B2726AA16C393A0D44BE40803EC1
-  // AFBE9F76BB0FD610E81E64760420008769E81799CB
-
-  // 07169BF4144CB85F35EC1DE198E653DB2BFD30A0C5D5B7C02E2A609EB919498C
-
-  // 8258DBDFF56ACC2F1A7C4E978C515A288BE09451EEE79B47E551F30F
-  // 5B632C18FD43434574E0101FF74525CA254C1288AFB615B491A00452BD565F40DED22A8138F684DE2D21C26D2B48A439C3200FB4A172D76DBDE1228542FF3ABBF4EC09F1BFFAE3861F6CD187269FD1983CC9BB25122E37A2C21C33AD9590865B54EAA0B5
-=======
->>>>>>> e57732a36ce7365c55c43cca9370fad375729e39
 }
 
 // internal static byte[] EncodeEncryptedMessage(EncryptedMessage encryptedMessage)
