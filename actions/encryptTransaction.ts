@@ -1,5 +1,5 @@
 import { bls12_381 } from "@noble/curves/bls12-381";
-import { zip } from "lodash";
+// import { zip } from "lodash";
 import {
   stringToBytes,
   hexToBytes,
@@ -153,18 +153,18 @@ function padAndSplit(bytes: Uint8Array): Uint8Array[] {
   return result;
 }
 
-function computeC3(
-  messageBlocks: Uint8Array[],
-  sigma: Uint8Array
-): Uint8Array[] {
-  const keys = computeBlockKeys(sigma, messageBlocks.length);
-  return zip(keys, messageBlocks).map(([key, block]) => {
-    if (key === undefined || block === undefined) {
-      throw new Error("Key or block is undefined");
-    }
-    return xorBlocks(key, block);
-  });
-}
+// function computeC3(
+//   messageBlocks: Uint8Array[],
+//   sigma: Uint8Array
+// ): Uint8Array[] {
+//   const keys = computeBlockKeys(sigma, messageBlocks.length);
+//   // return zip(keys, messageBlocks).map(([key, block]) => {
+//   //   if (key === undefined || block === undefined) {
+//   //     throw new Error("Key or block is undefined");
+//   //   }
+//   //   return xorBlocks(key, block);
+//   // });
+// }
 
 function computeBlockKeys(sigma: Uint8Array, n: number): Uint8Array[] {
   const keys: Uint8Array[] = [];
@@ -323,13 +323,13 @@ export async function encrypt(
   const r = await computeR(sigma, msg);
   const c1 = await computeC1(r);
   const c2 = await computeC2(sigma, r, identity, eonKey);
-  const c3 = computeC3(padAndSplit(msg), sigma); // Implement computeC3 based on your requirements
+  // const c3 = computeC3(padAndSplit(msg), sigma); // Implement computeC3 based on your requirements
 
   return {
     VersionId: 0x2,
     c1: c1,
     c2: c2,
-    c3: c3,
+    // c3: c3,
   };
 }
 
@@ -580,3 +580,5 @@ function encodeEncryptedMessage(
 
   return bytes;
 }
+
+testEncrypt();
