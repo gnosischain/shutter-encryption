@@ -6,7 +6,7 @@ import ConnectButton from "./components/connectButton";
 import { Input } from "@headlessui/react";
 import clsx from "clsx";
 import { SendTransaction } from "./components/sendTransaction";
-import { testEncrypt } from "@/actions/encryptTransaction";
+import { testEncrypt } from "@/actions/encryptTransactionGo";
 
 export default function Home() {
   const account = useAccount();
