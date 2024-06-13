@@ -1,46 +1,41 @@
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { ProjPointType } from "@noble/curves/abstract/weierstrass";
-import {
-  stringToBytes,
-  hexToBytes,
-  toBytes,
-  type Address,
-  keccak256,
-  bytesToBigInt,
-  bytesToHex,
-  numberToBytes,
-  numberToHex,
-  hexToBigInt,
-} from "viem";
+import { stringToBytes, hexToBytes, toBytes, type Address, keccak256, bytesToBigInt, bytesToHex, numberToBytes, numberToHex, hexToBigInt } from "viem";
 import pkg from "lodash";
+import { randomBytes } from "crypto";
 const { zip } = pkg;
 
-const blsSubgroupOrderBytes = [
-  0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09,
-  0xa1, 0xd8, 0x05, 0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff,
-  0xff, 0xff, 0x00, 0x00, 0x00, 0x01,
-];
+const blsSubgroupOrderBytes = [0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09, 0xa1, 0xd8, 0x05, 0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x01];
 const blsSubgroupOrder = bytesToBigInt(Uint8Array.from(blsSubgroupOrderBytes));
 
-export async function testEncrypt() {
-  const rawTxHex =
-    "f869820248849502f900825208943834a349678ef446bae07e2aeffc01054184af008203e880824fd3a001e44318458b1f279bf81aef969df1b9991944bf8b9d16fd1799ed5b0a7986faa058f572cce63aaff3326df9c902d338b0c416c8fb93109446d6aadd5a65d3d115";
-  const senderAddress = "3834a349678eF446baE07e2AefFC01054184af00";
-  const identityPrefixHex =
-    "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
-  const eonKeyHex =
-    "B068AD1BE382009AC2DCE123EC62DCA8337D6B93B909B3EE52E31CB9E4098D1B56D596BF3C08166C7B46CB3AA85C23381380055AB9F1A87786F2508F3E4CE5CAA5ABCDAE0A80141EE8CCC3626311E0A53BE5D873FA964FD85AD56771F2984579";
-  const sigmaHex =
-    "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
+export function computeData(rawTxHex: string, senderAddress: string) {
+  const randomBytesBuffer = randomBytes(12);
+  const randomHex = randomBytesBuffer.toString("hex");
+  const identityPrefixHex = senderAddress + randomHex;
+  const eonKeyHex = "";
+  const sigmaHex = identityPrefixHex;
 
   const identity = computeIdentity(identityPrefixHex, senderAddress);
 
-  const encryptedMessage = await encrypt(
-    rawTxHex,
-    identity,
-    bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex),
-    sigmaHex
-  );
+  const encryptedMessage = encrypt(rawTxHex, identity, bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex), sigmaHex);
+
+  const encoded: Uint8Array = encodeEncryptedMessage(encryptedMessage);
+
+  const encryptedTx = bytesToHex(encoded);
+
+  return encryptedTx;
+}
+
+export async function testEncrypt() {
+  const rawTxHex = "f869820248849502f900825208943834a349678ef446bae07e2aeffc01054184af008203e880824fd3a001e44318458b1f279bf81aef969df1b9991944bf8b9d16fd1799ed5b0a7986faa058f572cce63aaff3326df9c902d338b0c416c8fb93109446d6aadd5a65d3d115";
+  const senderAddress = "3834a349678eF446baE07e2AefFC01054184af00";
+  const identityPrefixHex = "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
+  const eonKeyHex = "B068AD1BE382009AC2DCE123EC62DCA8337D6B93B909B3EE52E31CB9E4098D1B56D596BF3C08166C7B46CB3AA85C23381380055AB9F1A87786F2508F3E4CE5CAA5ABCDAE0A80141EE8CCC3626311E0A53BE5D873FA964FD85AD56771F2984579";
+  const sigmaHex = "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
+
+  const identity = computeIdentity(identityPrefixHex, senderAddress);
+
+  const encryptedMessage = await encrypt(rawTxHex, identity, bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex), sigmaHex);
 
   const encoded: Uint8Array = encodeEncryptedMessage(encryptedMessage);
 
@@ -60,10 +55,7 @@ export async function testEncrypt() {
   // D5AE38A4349D2843A2A240D241CC3D4F2B0002279DDB8AFDABC5C2280DD1116908EE953789A7EEAE548D93B16858DAC875F2C33BE3BA12B56BA70ED1C6A780BAE916C2C6E2F5A5D3A8B95B766523B42B6498BEF762E50D4977E4F306BB9D37346DD5E8C2C17BC03CA27434C99A299093A56058246FEF60EAB134D7A62F628E32
 }
 
-function computeIdentity(
-  identityPrefixHex: string,
-  senderAddress: string
-): any {
+function computeIdentity(identityPrefixHex: string, senderAddress: string): any {
   //  from nethermmind:
   //  hash before reverse
   //  097AAE4DFD3D5445FE9A992BD361A7355B3A2C38BBC58EE77B280235652DD9F0
@@ -80,21 +72,20 @@ function computeIdentity(
   // 0XF0D92D653502287BE78EC5BB382C3A5B35A761D32B999AFE45543DFD4DAE7A09
 
   const hashReversedBigInt = bytesToBigInt(hashReversed) % bls12_381.G1.CURVE.n;
-  const identity =
-    bls12_381.G1.ProjectivePoint.BASE.multiply(hashReversedBigInt);
+  const identity = bls12_381.G1.ProjectivePoint.BASE.multiply(hashReversedBigInt);
 
   // BASE to check
-  console.log("base");
-  console.log(bls12_381.G1.ProjectivePoint.BASE.toHex());
-  console.log("identity");
-  console.log(identity.toRawBytes());
-  console.log(identity.toHex());
+  // console.log("base");
+  // console.log(bls12_381.G1.ProjectivePoint.BASE.toHex());
+  // console.log("identity");
+  // console.log(identity.toRawBytes());
+  // console.log(identity.toHex());
   return identity;
 
   // N: 18D7F194D424CBC9A3AA9D999F46A72AC65549C35E7CA40775B8FE81D0E4D7A1CA95F9E895C88091AF271A646C83DB410A8F4D2796652E44C9134A013678DC5E61221F4821B038E69742E077B21A1A1B0B338AF0BF2E8C34378CC00D05DA665A
 }
 
-export async function encrypt(
+export function encrypt(
   msg: string,
   identity: ProjPointType<bigint>,
   eonKey: ProjPointType<any>, // ProjPointType<Fp2>,
@@ -104,10 +95,7 @@ export async function encrypt(
 
   const c1 = computeC1(r);
   const c2 = computeC2(hexToBytes(`0x${sigma}`)); // ok
-  const c3 = computeC3(
-    padAndSplit(hexToBytes(`0x${msg}`)),
-    hexToBytes(`0x${sigma}`)
-  );
+  const c3 = computeC3(padAndSplit(hexToBytes(`0x${msg}`)), hexToBytes(`0x${sigma}`));
 
   return {
     VersionId: 0x2,
@@ -189,16 +177,13 @@ function computeC2(sigma: Uint8Array) {
 //     IEnumerable<Bytes32> keys = ShutterCrypto.ComputeBlockKeys(sigma, messageBlocks.Count());
 //     return Enumerable.Zip(keys, messageBlocks, ShutterCrypto.XorBlocks);
 // }
-function computeC3(
-  messageBlocks: Uint8Array[],
-  sigma: Uint8Array
-): Uint8Array[] {
+function computeC3(messageBlocks: Uint8Array[], sigma: Uint8Array): Uint8Array[] {
   const keys = computeBlockKeys(sigma, messageBlocks.length);
 
-  console.log("compute c3, keys");
-  for (const key of keys) {
-    console.log(bytesToHex(key));
-  }
+  // console.log("compute c3, keys");
+  // for (const key of keys) {
+  //   console.log(bytesToHex(key));
+  // }
   return zip(keys, messageBlocks).map(([key, block]) => {
     if (key === undefined || block === undefined) {
       throw new Error("Key or block is undefined");

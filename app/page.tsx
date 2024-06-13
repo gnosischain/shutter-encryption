@@ -3,10 +3,8 @@
 import { useEffect } from "react";
 import { useAccount, useDisconnect } from "wagmi";
 import ConnectButton from "./components/connectButton";
-import { Input } from "@headlessui/react";
-import clsx from "clsx";
 import { SendTransaction } from "./components/sendTransaction";
-import { testEncrypt } from "@/actions/encryptTransactionGo";
+import { testEncrypt } from "@/actions/encryptTxNobleCurves";
 
 export default function Home() {
   const account = useAccount();
@@ -37,7 +35,7 @@ export default function Home() {
       )}
       <div className="flex flex-col items-center mt-4 text-nowrap">
         <p className="mr-2">Paste your transaction in here:</p>
-        <SendTransaction />
+        <SendTransaction address={account.address}/>
       </div>
     </main>
   );
