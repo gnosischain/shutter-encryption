@@ -2,17 +2,12 @@ import { bls12_381 } from "@noble/curves/bls12-381";
 import { ProjPointType } from "@noble/curves/abstract/weierstrass";
 import { stringToBytes, hexToBytes, toBytes, type Address, keccak256, bytesToBigInt, bytesToHex, numberToBytes, numberToHex, hexToBigInt } from "viem";
 import pkg from "lodash";
-import { randomBytes } from "crypto";
 const { zip } = pkg;
 
 const blsSubgroupOrderBytes = [0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09, 0xa1, 0xd8, 0x05, 0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x01];
 const blsSubgroupOrder = bytesToBigInt(Uint8Array.from(blsSubgroupOrderBytes));
 
-export function computeData(rawTxHex: string, senderAddress: string, eonKeyHex: string) {
-  console.log(rawTxHex, senderAddress, eonKeyHex);
-  const randomBytesBuffer = randomBytes(12);
-  const randomHex = randomBytesBuffer.toString("hex");
-  const identityPrefixHex = senderAddress + randomHex;
+export function computeData(rawTxHex: string, senderAddress: string, identityPrefixHex: string, eonKeyHex: string) {
   const sigmaHex = identityPrefixHex;
 
   const identity = computeIdentity(identityPrefixHex, senderAddress);
@@ -35,7 +30,7 @@ export async function testEncrypt() {
 
   const identity = computeIdentity(identityPrefixHex, senderAddress);
 
-  const encryptedMessage = await encrypt(rawTxHex, identity, bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex), sigmaHex);
+  const encryptedMessage = encrypt(rawTxHex, identity, bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex), sigmaHex);
 
   const encoded: Uint8Array = encodeEncryptedMessage(encryptedMessage);
 

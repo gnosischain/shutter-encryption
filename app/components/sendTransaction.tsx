@@ -2,12 +2,14 @@ import { computeData } from "@/actions/encryptTxNobleCurves";
 import { Input } from "@headlessui/react";
 import clsx from "clsx";
 import * as React from "react";
-import { Address } from "viem";
+import { Address, hexToBytes, stringToBytes } from "viem";
 import { config } from "@/wagmi";
-import { type BaseError, useSendTransaction, useWaitForTransactionReceipt, useReadContract } from "wagmi";
+import { type BaseError, useSendTransaction, useWaitForTransactionReceipt, useReadContract, useWriteContract } from "wagmi";
 import { getPublicClient } from "wagmi/actions";
 import keyperSetManagerABI from "@/utils/abis/keyperSetManager";
 import keyBroadcastABI from "@/utils/abis/keyBroadcast";
+import sequencerABI from "@/utils/abis/sequencer";
+import { randomBytes } from "crypto";
 
 const SEQUENCER = "0x854ce9415d1Ee1d95ACf7d0F2c718AaA9A5894aa";
 const KEYPERSETMANAGER = "0x847efd7D3a8b4AF8226bc156c330002d1c06Cf75";
@@ -21,7 +23,7 @@ interface SendTransactionProps {
 
 export function SendTransaction({ address, chainId }: SendTransactionProps) {
   const client = getPublicClient(config, { chainId: chainId as 100 | 10200 | undefined });
-  const { data: hash, error, isPending, sendTransaction } = useSendTransaction();
+  const { data: hash, error, isPending, writeContract } = useWriteContract();
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,8 +44,12 @@ export function SendTransaction({ address, chainId }: SendTransactionProps) {
     });
     const data = formData.get("data") as `0x${string}`;
     if (address) {
-      const encryptedTx = computeData(data, address.slice(2), eonKeyBytes.slice(2));
-      sendTransaction({ to: SEQUENCER, data: encryptedTx });
+      const randomBytesBuffer = randomBytes(12);
+      const randomHex = randomBytesBuffer.toString("hex");
+      const identityPrefixHex = address + randomHex;
+      const encryptedTx = computeData(data, address.slice(2), identityPrefixHex.slice(2), eonKeyBytes.slice(2));
+      const identityPrefix = hexToBytes(`0x${identityPrefixHex.slice(2)}`, { size: 32 });
+      writeContract({ address: SEQUENCER, abi: sequencerABI, functionName: "submitEncryptedTransaction", args: [eon, identityPrefix, encryptedTx.slice(2), 21000] });
     }
   }
 
