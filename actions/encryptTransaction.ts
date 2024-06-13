@@ -569,7 +569,8 @@ function encodeEncryptedMessage(
   console.log("===== C1");
   console.log(encryptedMessage.c1);
   console.log(typeof encryptedMessage.c1);
-  bytes.set(encryptedMessage.c1.toRawBytes(true), 1);
+  // bytes.set(encryptedMessage.c1.toRawBytes(true), 1);
+  bytes.set(encryptedMessage.c1.toRawBytes(false), 1);
 
   bytes.set(encryptedMessage.c2, 1 + c1Length);
 
