@@ -8,11 +8,10 @@ const { zip } = pkg;
 const blsSubgroupOrderBytes = [0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09, 0xa1, 0xd8, 0x05, 0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x01];
 const blsSubgroupOrder = bytesToBigInt(Uint8Array.from(blsSubgroupOrderBytes));
 
-export function computeData(rawTxHex: string, senderAddress: string) {
+export function computeData(rawTxHex: string, senderAddress: string, eonKeyHex: string) {
   const randomBytesBuffer = randomBytes(12);
   const randomHex = randomBytesBuffer.toString("hex");
   const identityPrefixHex = senderAddress + randomHex;
-  const eonKeyHex = "";
   const sigmaHex = identityPrefixHex;
 
   const identity = computeIdentity(identityPrefixHex, senderAddress);

@@ -35,7 +35,7 @@ export default function Home() {
       )}
       <div className="flex flex-col items-center mt-4 text-nowrap">
         <p className="mr-2">Paste your transaction in here:</p>
-        <SendTransaction address={account.address}/>
+        <SendTransaction address={account.address} chainId={account.chainId} />
       </div>
     </main>
   );
