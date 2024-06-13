@@ -9,6 +9,7 @@ const blsSubgroupOrderBytes = [0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0
 const blsSubgroupOrder = bytesToBigInt(Uint8Array.from(blsSubgroupOrderBytes));
 
 export function computeData(rawTxHex: string, senderAddress: string, eonKeyHex: string) {
+  console.log(rawTxHex, senderAddress, eonKeyHex);
   const randomBytesBuffer = randomBytes(12);
   const randomHex = randomBytesBuffer.toString("hex");
   const identityPrefixHex = senderAddress + randomHex;

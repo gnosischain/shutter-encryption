@@ -2,17 +2,17 @@ const keyperSetManagerABI = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "blockNumber",
-        type: "uint256",
+        internalType: "uint64",
+        name: "block",
+        type: "uint64",
       },
     ],
-    name: "GetKeyperSetIndexByBlock",
+    name: "getKeyperSetIndexByBlock",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "uint64",
         name: "",
-        type: "uint256",
+        type: "uint64",
       },
     ],
     stateMutability: "view",

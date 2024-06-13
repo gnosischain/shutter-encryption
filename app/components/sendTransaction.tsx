@@ -12,7 +12,7 @@ import keyBroadcastABI from "@/utils/abis/keyBroadcast";
 const SEQUENCER = "0x854ce9415d1Ee1d95ACf7d0F2c718AaA9A5894aa";
 const KEYPERSETMANAGER = "0x847efd7D3a8b4AF8226bc156c330002d1c06Cf75";
 const KEYBROADCAST = "0x4c6A91Aff2C81df838437d104DA71369A6b4030e";
-const tKeyperSetChangeLookAhead = BigInt(50);
+const tKeyperSetChangeLookAhead = BigInt(4);
 
 interface SendTransactionProps {
   address: Address | undefined;
@@ -30,7 +30,7 @@ export function SendTransaction({ address, chainId }: SendTransactionProps) {
     const eon = await client.readContract({
       address: KEYPERSETMANAGER,
       abi: keyperSetManagerABI,
-      functionName: "GetKeyperSetIndexByBlock",
+      functionName: "getKeyperSetIndexByBlock",
       args: [blockNumber + tKeyperSetChangeLookAhead],
     });
 
@@ -42,7 +42,7 @@ export function SendTransaction({ address, chainId }: SendTransactionProps) {
     });
     const data = formData.get("data") as `0x${string}`;
     if (address) {
-      const encryptedTx = computeData(data, address, eonKeyBytes);
+      const encryptedTx = computeData(data, address.slice(2), eonKeyBytes.slice(2));
       sendTransaction({ to: SEQUENCER, data: encryptedTx });
     }
   }
