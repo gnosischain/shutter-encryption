@@ -8,8 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --loader ts-node/esm actions/encryptTransaction.ts",
-    "test2": "node --loader ts-node/esm actions/encryptTxNobleCurves.ts"
+    "test-one-tx": "node --loader ts-node/esm actions/test/encryptTxNobleCurvesTestOneTx.ts",
+    "test-json": "node --loader ts-node/esm actions/testEncryption.ts"
   },
   "dependencies": {
     "@chainsafe/bls": "^8.1.0",
