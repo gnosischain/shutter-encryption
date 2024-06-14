@@ -4,11 +4,7 @@ import { hexToBytes, keccak256, bytesToBigInt, bytesToHex } from "viem";
 import pkg from "lodash";
 const { zip } = pkg;
 
-const blsSubgroupOrderBytes = [
-  0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09,
-  0xa1, 0xd8, 0x05, 0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff,
-  0xff, 0xff, 0x00, 0x00, 0x00, 0x01,
-];
+const blsSubgroupOrderBytes = [0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09, 0xa1, 0xd8, 0x05, 0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x01];
 const blsSubgroupOrder = bytesToBigInt(Uint8Array.from(blsSubgroupOrderBytes));
 
 // example of parameters:
@@ -22,36 +18,30 @@ const blsSubgroupOrder = bytesToBigInt(Uint8Array.from(blsSubgroupOrderBytes));
 // const sigmaHex =
 //   "3834a349678eF446baE07e2AefFC01054184af00383438343834383438343834";
 
-export function encryptTx(
-  rawTxHex: string,
-  senderAddress: string,
-  identityPrefixHex: string,
-  eonKeyHex: string,
-  sigmaHex: string
-) {
+export function computeData(rawTxHex: string, senderAddress: string, identityPrefixHex: string, eonKeyHex: string) {
+  const sigmaHex = identityPrefixHex;
+
+  const identity = computeIdentity(identityPrefixHex, senderAddress);
+  const encryptedMessage = encrypt(rawTxHex, identity, bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex), sigmaHex);
+  const encryptedTx = encodeEncryptedMessage(encryptedMessage);
+  return encryptedTx;
+}
+
+export function encryptTx(rawTxHex: string, senderAddress: string, identityPrefixHex: string, eonKeyHex: string, sigmaHex: string) {
   const identity = computeIdentity(identityPrefixHex, senderAddress);
 
-  const encryptedMessage = encrypt(
-    rawTxHex,
-    identity,
-    bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex),
-    sigmaHex
-  );
+  const encryptedMessage = encrypt(rawTxHex, identity, bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex), sigmaHex);
 
   const encodedTx = encodeEncryptedMessage(encryptedMessage);
   return encodedTx;
 }
 
-export function computeIdentity(
-  identityPrefixHex: string,
-  senderAddress: string
-): any {
+export function computeIdentity(identityPrefixHex: string, senderAddress: string): any {
   const preimage = "0x1" + identityPrefixHex + senderAddress;
   const hash = keccak256(preimage as `0x${string}`);
   const hashReversed = hexToBytes(hash).reverse();
   const hashReversedBigInt = bytesToBigInt(hashReversed) % bls12_381.G1.CURVE.n;
-  const identity =
-    bls12_381.G1.ProjectivePoint.BASE.multiply(hashReversedBigInt);
+  const identity = bls12_381.G1.ProjectivePoint.BASE.multiply(hashReversedBigInt);
   return identity;
 }
 
@@ -65,10 +55,7 @@ export function encrypt(
 
   const c1 = computeC1(r);
   const c2 = computeC2(hexToBytes(`0x${sigma}`));
-  const c3 = computeC3(
-    padAndSplit(hexToBytes(`0x${msg}`)),
-    hexToBytes(`0x${sigma}`)
-  );
+  const c3 = computeC3(padAndSplit(hexToBytes(`0x${msg}`)), hexToBytes(`0x${sigma}`));
 
   return {
     VersionId: 0x2,
@@ -118,10 +105,7 @@ function computeC2(sigma: Uint8Array) {
   return xorBlocks(sigma, key);
 }
 
-function computeC3(
-  messageBlocks: Uint8Array[],
-  sigma: Uint8Array
-): Uint8Array[] {
+function computeC3(messageBlocks: Uint8Array[], sigma: Uint8Array): Uint8Array[] {
   const keys = computeBlockKeys(sigma, messageBlocks.length);
 
   return zip(keys, messageBlocks).map(([key, block]) => {

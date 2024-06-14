@@ -48,10 +48,10 @@ export function SendTransaction({ address, chainId }: SendTransactionProps) {
     if (address) {
       const randomBytesBuffer = randomBytes(12);
       const randomHex = randomBytesBuffer.toString("hex");
-      const identityPrefixHex = address.slice(2) + randomHex;
-      const encryptedTx = computeData(data, address.slice(2), identityPrefixHex, eonKeyBytes.slice(2));
+      const identityPrefixHex = address + randomHex;
+      const encryptedTx = computeData(data.slice(2), address.slice(2), identityPrefixHex.slice(2), eonKeyBytes.slice(2));
       // const identityPrefix = hexToBytes(`0x${identityPrefixHex}`, { size: 32 });
-      writeContract({ address: SEQUENCER, abi: sequencerABI, functionName: "submitEncryptedTransaction", args: [eon, `0x${identityPrefixHex}`, encryptedTx, 21000] });
+      writeContract({ address: SEQUENCER, abi: sequencerABI, functionName: "submitEncryptedTransaction", args: [eon, identityPrefixHex, encryptedTx, 21000] });
     }
   }
 
