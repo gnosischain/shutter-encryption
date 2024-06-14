@@ -8,7 +8,7 @@ const client = createWalletClient({
 });
 
 // raw tx
-// 0x02f8718227d88084b2d05e0084b2d05e088252089497d2eeb65da0c37dc0f43ff4691e521673efadfd85174876e80080c001a0791a93be3322b31d22e2e818b784bb9ae7619ee9c1eb2b39a51551626d1b642ea038206a93bc2e87e81505f7c7aab3af272d42ebde98bad8810b01df89814378d4
+// 0x02f8738227d80184b6fc7b7984b6fc7b818252089497d2eeb65da0c37dc0f43ff4691e521673efadfd872386f26fc1000080c080a09f618e2973dddaa016922799340758cd8b68ca3f813d4dab42b7d3fa5134e331a076b467d0853e6ff092cf1aa5134fbf940673b45b735944fdd0b0ea8fcd2e23df
 
 export async function prepareAndSignTransaction() {
   try {
@@ -16,7 +16,7 @@ export async function prepareAndSignTransaction() {
       account: privateKeyToAccount("0x0"),
       chain: gnosisChiado,
       to: "0x97D2eEb65DA0c37dc0F43FF4691E521673eFADfd",
-      value: BigInt(100000000000),
+      value: BigInt(10000000000000000),
     });
 
     const serializedTransaction = await client.signTransaction(request);
