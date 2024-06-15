@@ -19,6 +19,7 @@ const sequencerABI = [
       },
     ],
     name: "submitEncryptedTransaction",
+    outputs: [],
     type: "function",
   },
 ] as const;
