@@ -31,17 +31,15 @@ export function encryptTx(
   eonKeyHex: string,
   sigmaHex: string
 ) {
-  const identity = computeIdentity(identityPrefixHex, senderAddress);
-
-  const encryptedMessage = encrypt(
-    rawTxHex,
-    identity,
-    bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex),
-    sigmaHex
-  );
-
-  const encodedTx = encodeEncryptedMessage(encryptedMessage);
-  return encodedTx;
+  // const identity = computeIdentity(identityPrefixHex, senderAddress);
+  // const encryptedMessage = encrypt(
+  //   rawTxHex,
+  //   identity,
+  //   eonKeyHex, // bls12_381.G2.ProjectivePoint.fromHex(eonKeyHex),
+  //   sigmaHex
+  // );
+  // const encodedTx = encodeEncryptedMessage(encryptedMessage);
+  // return encodedTx;
 }
 
 export async function computeIdentityPreimage(preimage: string): Promise<any> {
@@ -57,8 +55,9 @@ export async function computeIdentityPreimage(preimage: string): Promise<any> {
     "SHUTTER_V01_BLS12381G1_XMD:SHA-256_SSWU_RO_"
   );
 
-  console.log(bytesToHex(identity.serialize()).toUpperCase());
-  return identity;
+  // console.log(bytesToHex(identity.serialize()).toUpperCase()); // ok
+  // console.log(identity);
+  return identity.serialize();
   // const hash = keccak256(preimage as `0x${string}`);
   // const hashReversed = hexToBytes(hash).reverse();
   // const hashReversedBigInt = bytesToBigInt(hashReversed) % bls12_381.G1.CURVE.n;
@@ -95,25 +94,31 @@ export async function computeIdentity(
 }
 
 export function encrypt(
-  msg: string,
-  identity: any, // ProjPointType<bigint>,
-  eonKey: ProjPointType<any>, // ProjPointType<Fp2>,
-  sigma: string
+  msg: `0x${string}`,
+  identity: Uint8Array, // ProjPointType<bigint>,
+  eonKeyHex: `0x${string}`, // ProjPointType<any>, // ProjPointType<Fp2>,
+  sigma: `0x${string}`
 ) {
-  const r = computeR(sigma, msg);
+  const r = computeR(sigma.slice(2), msg.slice(2));
+  console.log("r", r);
 
   const c1 = computeC1(r);
+  console.log("c1", c1);
+  const eonKey = bls12_381.G2.ProjectivePoint.fromHex(
+    eonKeyHex.slice(2)
+  ).toRawBytes();
+  console.log("eonKey", eonKey);
   const c2 = computeC2(`0x${sigma}`, r, identity, eonKey);
-  const c3 = computeC3(
-    padAndSplit(hexToBytes(`0x${msg}`)),
-    hexToBytes(`0x${sigma}`)
-  );
+  // const c3 = computeC3(
+  //   padAndSplit(hexToBytes(`0x${msg}`)),
+  //   hexToBytes(`0x${sigma}`)
+  // );
 
   return {
     VersionId: 0x2,
     c1: c1,
     c2: c2,
-    c3: c3,
+    // c3: c3,
   };
 }
 
@@ -159,15 +164,19 @@ function computeC1(r: bigint) {
 //     Bytes32 key = ShutterCrypto.Hash2(preimage);
 //     return ShutterCrypto.XorBlocks(sigma, key);
 // }
-function computeC2(
+async function computeC2(
   sigma: string,
   r: bigint,
-  identity: ProjPointType<bigint>,
-  eonKey: ProjPointType<any>
+  identity: Uint8Array, // ProjPointType<bigint>,
+  eonKey: Uint8Array // ProjPointType<any>
 ) {
-  // console.log("identity", identity.toHex()); // Identity OK
-  // console.log("eonKey", eonKey.toHex()); // EonKey OK
-  const p = bls12_381.pairing(identity, eonKey, true);
+  console.log("identity", bytesToHex(identity)); // Identity OK
+  console.log("eonKey", bytesToHex(eonKey)); // EonKey OK
+
+  const blst = await blstLib.getBlst();
+  // const preimage = new blst.PT(identity, eonKey);
+  // console.log("preimage", preimage);
+  // const p = bls12_381.pairing(identity, eonKey, true);
   // console.log(p.c0);
 
   // type PairingType = ReturnType<typeof bls12_381.pairing>;
@@ -182,12 +191,12 @@ function computeC2(
   // console.log("pBytes", pBytes);
   // const hexBytes = bytesToHex(pBytes);
   // console.log("hexBytes P", hexBytes);
-  const preimage = GTExp(p, r);
+  // const preimage = GTExp(p, r);
 
-  // console.log("preimage", preimage.toHex());
-  const key = hash2(preimage); // Implement hash2 based on your requirements
-  console.log("key", bytesToHex(key));
-  return xorBlocks(hexToBytes(`0x${sigma}`), key); // Implement xorBlocks based on your requirements
+  // // console.log("preimage", preimage.toHex());
+  // const key = hash2(preimage); // Implement hash2 based on your requirements
+  // // console.log("key", bytesToHex(key));
+  // return xorBlocks(hexToBytes(`0x${sigma}`), key); // Implement xorBlocks based on your requirements
 }
 
 function computeC3(
