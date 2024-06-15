@@ -44,23 +44,48 @@ export function encryptTx(
   return encodedTx;
 }
 
+export async function computeIdentityPreimage(preimage: string): Promise<any> {
+  const preimageBytes = hexToBytes(
+    ("0x1" + preimage.slice(2)) as `0x${string}`
+  );
+
+  const blst = await blstLib.getBlst();
+
+  const P1 = new blst.P1();
+  const identity = P1.hash_to(
+    preimageBytes,
+    "SHUTTER_V01_BLS12381G1_XMD:SHA-256_SSWU_RO_"
+  );
+
+  console.log(bytesToHex(identity.serialize()).toUpperCase());
+  return identity;
+  // const hash = keccak256(preimage as `0x${string}`);
+  // const hashReversed = hexToBytes(hash).reverse();
+  // const hashReversedBigInt = bytesToBigInt(hashReversed) % bls12_381.G1.CURVE.n;
+  // const identity =
+  //   bls12_381.G1.ProjectivePoint.BASE.multiply(hashReversedBigInt);
+  // return identity;
+}
+
 export async function computeIdentity(
   identityPrefixHex: string,
   senderAddress: string
 ): Promise<any> {
   const preimage = "0x1" + identityPrefixHex + senderAddress;
 
+  // const blst = await blstLib.getBlst();
+
   // return new G1().hash_to(
   //   preimage,
   //   "SHUTTER_V01_BLS12381G1_XMD:SHA-256_SSWU_RO_"
   // );
+  // const P1 = new blst.P1();
+  // console.log(P1);
+  // const identity = blst
+  //   .G1()
+  //   .hash_to(preimage, "SHUTTER_V01_BLS12381G1_XMD:SHA-256_SSWU_RO_");
 
-  const blst = await blstLib.getBlst();
-  const identity = blst
-    .G1()
-    .hash_to(preimage, "SHUTTER_V01_BLS12381G1_XMD:SHA-256_SSWU_RO_");
-
-  return identity;
+  // return identity;
   // const hash = keccak256(preimage as `0x${string}`);
   // const hashReversed = hexToBytes(hash).reverse();
   // const hashReversedBigInt = bytesToBigInt(hashReversed) % bls12_381.G1.CURVE.n;
@@ -310,11 +335,11 @@ function GTExp(x: Fp12Type, exp: bigint): Fp12Type {
   return result;
 }
 
-const main = async () => {
-  const blst = await blstLib.getBlst();
-  console.log("GOT THE LIB");
-  console.log(blst);
-  // console.log(blstLib);
-};
+// const main = async () => {
+//   const blst = await blstLib.getBlst();
+//   console.log("GOT THE LIB");
+//   console.log(blst);
+//   // console.log(blstLib);
+// };
 
-main();
+// main();

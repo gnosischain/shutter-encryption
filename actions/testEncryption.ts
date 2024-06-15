@@ -1,8 +1,9 @@
 import { bytesToHex } from "viem";
 import {
-  encryptSimplified as encrypt,
+  encrypt,
+  computeIdentityPreimage,
   encodeEncryptedMessage,
-} from "./encryptTxNobleCurves.js";
+} from "./encryptTxNobleCurvesFull.js";
 import tests from "./cryptotests_blst.json" assert { type: "json" };
 
 type Test = {
@@ -19,27 +20,29 @@ type Test = {
   };
 };
 
-function runTests() {
+async function runTests() {
   for (const test of tests as Test[]) {
-    if (test.type === "encryption") {
+    if (test.type === "encryption" && test.id === "16") {
       console.log("TEST");
       console.log(test.name, test.id);
-      console.log(
-        test.test_data.message.slice(2),
-        test.test_data.sigma.slice(2)
-      );
-      const encrypted = encrypt(
-        test.test_data.message.slice(2),
-        test.test_data.sigma.slice(2)
-      );
+
+      console.log(1);
+      const identity = await computeIdentityPreimage(test.test_data.epoch_id);
+      console.log("identity", identity);
+      // const encrypted = encrypt(
+      //   test.test_data.message.slice(2),
+      //   test.test_data.epoch_id.slice(2),
+      //   test.test_data.eon_public_key.slice(2),
+      //   test.test_data.sigma.slice(2)
+      // );
 
       // console.log("encrypted");
       // console.log(encrypted);
-      const encoded = bytesToHex(encodeEncryptedMessage(encrypted));
+      // const encoded = encodeEncryptedMessage(encrypted);
       // console.log(bytesToHex(encoded));
-      console.log(encoded.toUpperCase());
-      console.log(test.test_data.expected.toUpperCase());
-      console.log(encoded === test.test_data.expected);
+      // console.log(encoded.toUpperCase());
+      // console.log(test.test_data.expected.toUpperCase());
+      // console.log(encoded === test.test_data.expected);
     }
   }
 }
