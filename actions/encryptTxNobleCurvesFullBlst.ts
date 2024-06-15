@@ -34,8 +34,8 @@ export async function computeIdentityP1(preimage: `0x${string}`): Promise<P1> {
 
   const blst = await blstLib.getBlst();
 
-  const P1 = new blst.P1();
-  const identity = P1.hash_to(
+  const p1 = new blst.P1();
+  const identity = p1.hash_to(
     preimageBytes,
     "SHUTTER_V01_BLS12381G1_XMD:SHA-256_SSWU_RO_"
   );
@@ -128,6 +128,8 @@ async function computeC2(
   const blst = await blstLib.getBlst();
 
   console.log("computeC2....");
+  // const one = blst.PT.one;
+  // console.log("one", one);
   const p: PT = new blst.PT(identity, eonKey); // throws an error
   const preimage = await GTExp(p, r);
   const key = hash2(preimage);
