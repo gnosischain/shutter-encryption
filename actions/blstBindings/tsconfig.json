@@ -1,0 +1,9 @@
+{
+  "include": ["*.ts", "blstWrapper.cjs"],
+  "compilerOptions": {
+    "target": "esnext",
+    "noEmit": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
+  }
+}
