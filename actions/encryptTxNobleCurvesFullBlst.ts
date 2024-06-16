@@ -3,8 +3,8 @@ import { hexToBytes, keccak256, bytesToBigInt, bytesToHex } from "viem";
 import pkg from "lodash";
 const { zip } = pkg;
 
-import * as blstLib from "./blstBindings/bindings.js";
-import { Blst, P1, P2, PT } from "./blstBindings/blst.hpp.js";
+import * as blstLib from "./blstNodejs/bindings.js";
+import { Blst, P1, P2, PT } from "./blstNodejs/blst.hpp.js";
 
 const blsSubgroupOrderBytes = [
   0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09,
@@ -19,12 +19,11 @@ async function encryptData(
   eonKeyHex: `0x${string}`,
   sigmaHex: `0x${string}`
 ) {
-  console.log("encryptData =========");
   const identity = await computeIdentityP1(identityPreimageHex);
   const eonKey = await computeEonKeyP2(eonKeyHex);
-  const encryptedMessage = encrypt(msgHex, identity, eonKey, sigmaHex);
-  // const encodedTx = encodeEncryptedMessage(encryptedMessage);
-  // return encodedTx;
+  const encryptedMessage = await encrypt(msgHex, identity, eonKey, sigmaHex);
+  const encodedTx = encodeEncryptedMessage(encryptedMessage);
+  return encodedTx;
 }
 
 export async function computeIdentityP1(preimage: `0x${string}`): Promise<P1> {
@@ -33,21 +32,20 @@ export async function computeIdentityP1(preimage: `0x${string}`): Promise<P1> {
   );
 
   const blst = await blstLib.getBlst();
-
   const p1 = new blst.P1();
   const identity = p1.hash_to(
     preimageBytes,
     "SHUTTER_V01_BLS12381G1_XMD:SHA-256_SSWU_RO_"
   );
 
-  console.log("identity", bytesToHex(identity.serialize()).toUpperCase()); //ok
+  // console.log("identity", bytesToHex(identity.serialize()).toUpperCase()); //ok
   return identity;
 }
 
 async function computeEonKeyP2(eonKeyHex: `0x${string}`): Promise<P2> {
   const blst = await blstLib.getBlst();
   const eonKey = new blst.P2(hexToBytes(eonKeyHex));
-  console.log("eonKey", bytesToHex(eonKey.serialize()).toUpperCase());
+  // console.log("eonKey", bytesToHex(eonKey.serialize()).toUpperCase()); // ok
   return eonKey;
 }
 
@@ -63,7 +61,7 @@ async function encrypt(
   const c1 = computeC1(r);
   // console.log("c1", c1);
 
-  const c2 = computeC2(sigmaHex, r, identity, eonKey);
+  const c2 = await computeC2(sigmaHex, r, identity, eonKey);
   const c3 = computeC3(
     padAndSplit(hexToBytes(msgHex as `0x${string}`)),
     hexToBytes(sigmaHex as `0x${string}`)
@@ -77,24 +75,25 @@ async function encrypt(
   };
 }
 
-// export function encodeEncryptedMessage(encryptedMessage: any): `0x${string}` {
-//   const c1Length = 192;
-//   const c2Length = 32;
-//   const c3Length = encryptedMessage.c3.length * 32;
+export function encodeEncryptedMessage(encryptedMessage: any): `0x${string}` {
+  const c1Length = 96;
+  const c2Length = 32;
+  const c3Length = encryptedMessage.c3.length * 32;
 
-//   const totalLength = 1 + c1Length + c2Length + c3Length;
-//   const bytes = new Uint8Array(totalLength);
+  const totalLength = 1 + c1Length + c2Length + c3Length;
+  const bytes = new Uint8Array(totalLength);
 
-//   bytes[0] = encryptedMessage.VersionId;
-//   bytes.set(encryptedMessage.c1.toRawBytes(false), 1);
-//   bytes.set(encryptedMessage.c2, 1 + c1Length);
-//   encryptedMessage.c3.forEach((block: ArrayLike<number>, i: number) => {
-//     const offset = 1 + c1Length + c2Length + 32 * i;
-//     bytes.set(block, offset);
-//   });
+  // console.log(encryptedMessage);
+  bytes[0] = encryptedMessage.VersionId;
+  bytes.set(encryptedMessage.c1.toRawBytes(true), 1);
+  bytes.set(encryptedMessage.c2, 1 + c1Length);
+  encryptedMessage.c3.forEach((block: ArrayLike<number>, i: number) => {
+    const offset = 1 + c1Length + c2Length + 32 * i;
+    bytes.set(block, offset);
+  });
 
-//   return bytesToHex(bytes);
-// }
+  return bytesToHex(bytes);
+}
 
 //======================================
 function computeR(sigmaHex: string, msgHex: string): bigint {
@@ -109,16 +108,12 @@ function computeC1(r: bigint) {
     throw new Error(`Invalid value for rLittleEndian: ${rLittleEndian}`);
   }
   const g2Generator = bls12_381.G2.ProjectivePoint.BASE;
-  return g2Generator.multiply(rLittleEndian);
+
+  const result = g2Generator.multiply(rLittleEndian);
+  // console.log("result", result.toRawBytes(true));
+  return result;
 }
 
-// private static Bytes32 ComputeC2(Bytes32 sigma, UInt256 r, G1 identity, G2 eonKey)
-// {
-//     GT p = new(identity, eonKey);
-//     GT preimage = ShutterCrypto.GTExp(p, r);
-//     Bytes32 key = ShutterCrypto.Hash2(preimage);
-//     return ShutterCrypto.XorBlocks(sigma, key);
-// }
 async function computeC2(
   sigmaHex: string,
   r: bigint,
@@ -127,13 +122,17 @@ async function computeC2(
 ): Promise<any> {
   const blst = await blstLib.getBlst();
 
-  console.log("computeC2....");
-  // const one = blst.PT.one;
-  // console.log("one", one);
-  const p: PT = new blst.PT(identity, eonKey); // throws an error
-  const preimage = await GTExp(p, r);
+  const p: PT = new blst.PT(identity, eonKey); // ok
+  // console.log("p");
+  // console.log(bytesToHex(p.to_bendian()).toUpperCase()); // ok
+  const preimage = await GTExp(p, r); // ok
+  // console.log("     ");
+  // console.log(bytesToHex(preimage.to_bendian()).toUpperCase());
   const key = hash2(preimage);
+  // console.log("key: ", bytesToHex(key));
   const result = xorBlocks(hexToBytes(sigmaHex as `0x${string}`), key);
+  // console.log("compute C2:");
+  // console.log(bytesToHex(result).toUpperCase());
   return result;
 }
 
@@ -152,21 +151,12 @@ function computeC3(
 }
 
 //======================================
-// public static Bytes32 Hash2(GT p)
-// {
-//     Span<byte> preimage = stackalloc byte[577];
-//     preimage[0] = 0x2;
-//     p.final_exp().to_bendian().CopyTo(preimage[1..]);
-//     return HashBytesToBlock(preimage);
-// }
-// public static Bytes32 HashBytesToBlock(ReadOnlySpan<byte> bytes)
-// {
-//     return new(Keccak.Compute(bytes).Bytes);
-// }
 function hash2(p: PT): Uint8Array {
   const finalExp = p.final_exp().to_bendian();
-  // const bytes = finalExp.toBytes();
-  return keccak256(finalExp, "bytes");
+  const result = new Uint8Array(finalExp.length + 1);
+  result[0] = 0x2;
+  result.set(finalExp, 1);
+  return keccak256(result, "bytes");
 }
 
 function hash3(bytesHex: string): bigint {
@@ -235,12 +225,11 @@ function padAndSplit(bytes: Uint8Array): Uint8Array[] {
   return result;
 }
 
-// to test
 async function GTExp(x: PT, exp: bigint): Promise<PT> {
   const blst = await blstLib.getBlst();
 
   let a: PT = x;
-  let acc: PT = blst.PT.one(); // ???
+  let acc: PT = blst.PT.one();
 
   while (exp > BigInt(0)) {
     if (exp & BigInt(1)) {

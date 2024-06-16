@@ -3,9 +3,7 @@
 console.log("testing...");
 
 import { Blst } from "./blst.hpp";
-// eslint-disable-next-line
 const blst: Blst = require("blst");
-// import blst from "./blst.node";
 
 const msg = "assertion"; // this what we're signing
 const DST = "MY-DST"; // domain separation tag

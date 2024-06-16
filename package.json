@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "test-one-tx": "node --loader ts-node/esm actions/test/encryptTxNobleCurvesTestOneTx.ts",
-    "test-json": "node --import ./customLoader.mjs actions/testEncryption.ts",
+    "test-json": "node --import ./customLoader.mjs actions/test/testEncryption.ts",
     "test": "node --import ./customLoader.mjs actions/encryptTxNobleCurvesFull.ts"
   },
   "dependencies": {

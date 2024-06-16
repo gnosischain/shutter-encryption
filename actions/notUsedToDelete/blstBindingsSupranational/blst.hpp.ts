@@ -1,27 +1,6 @@
-// eslint-disable-next-line
-import { fileURLToPath } from "url";
-import { dirname, resolve } from "path";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-// const path = resolve(__dirname, "./blst.node");
-// export const blst: Blst = require(resolve(__dirname, "./blst.node"));
-
-const path = resolve(__dirname, "./blstWrapper.cjs");
-
-const getBlst = async () => {
-  const blst = await import(path);
-  return blst.default as Blst;
-};
-
-export { getBlst };
-
 export interface Blst {
-  BLS12_381_G1: P1_Affine;
-  BLS12_381_NEG_G1: P1_Affine;
-  BLS12_381_G2: P2_Affine;
-  BLS12_381_NEG_G2: P2_Affine;
   SecretKey: SecretKeyConstructor;
+  Scalar: ScalarConstructor;
   P1_Affine: P1_AffineConstructor;
   P2_Affine: P2_AffineConstructor;
   P1: P1Constructor;
@@ -35,7 +14,7 @@ export interface Blst {
 // blst.hpp types
 
 type bytes = Uint8Array;
-type scalar = bigint | bytes;
+type scalar = Scalar | bigint | bytes;
 type binary_string = string | bytes;
 
 // SecretKey
@@ -46,10 +25,33 @@ export interface SecretKeyConstructor {
 
 export interface SecretKey {
   keygen(IKM: binary_string, info?: string): void;
+  derive_master_eip2333(IKM: binary_string): void;
+  derive_child_eip2333(SK: SecretKey, child_index: number): void;
   from_bendian(_32: bytes): void;
   from_lendian(_32: bytes): void;
   to_bendian(): bytes;
   to_lendian(): bytes;
+}
+
+// Scalar
+
+export interface ScalarConstructor {
+  new (): Scalar;
+  new (le: bytes): Scalar;
+  new (msg: binary_string, DST?: string): Scalar;
+}
+
+export interface Scalar {
+  hash_to (msg: binary_string, DST?: string): this;
+  dup(): Scalar;
+  from_bendian(be: bytes): this;
+  from_lendian(le: bytes): this;
+  to_bendian(): bytes;
+  to_lendian(): bytes;
+  add(s: this | SecretKey): this;
+  sub(s: this): this;
+  mul(s: this): this;
+  inverse(): this;
 }
 
 // P1
@@ -166,7 +168,10 @@ export interface P2 {
 
 export interface PTConstructor {
   new (p: P1_Affine): PT;
-  new (p: P2_Affine): PT;
+  new (q: P2_Affine): PT;
+  new (q: P2_Affine | P2, p: P1_Affine | P1): PT;
+  new (p: P1_Affine | P1, q: P2_Affine | P2): PT;
+  one(): PT;
 }
 
 export interface PT {
@@ -176,6 +181,8 @@ export interface PT {
   sqr(): this;
   mul(p: PT): this;
   final_exp(): this;
+  in_group(): boolean;
+  to_bendian(): bytes;
 }
 
 // Pairing
@@ -214,6 +221,8 @@ export interface Pairing {
   commit(): void;
   merge(ctx: Pairing): BLST_ERROR;
   finalverify(sig?: PT): boolean;
+  raw_aggregate(q: P2_Affine, p: P1_Affine): void;
+  as_fp12(): PT;
 }
 
 // Misc
@@ -226,6 +235,5 @@ export enum BLST_ERROR {
   BLST_AGGR_TYPE_MISMATCH = 4,
   BLST_VERIFY_FAIL = 5,
   BLST_PK_IS_INFINITY = 6,
-  // Extra errors not in native bindings
-  EMPTY_AGGREGATE_ARRAY = "EMPTY_AGGREGATE_ARRAY",
+  BLST_BAD_SCALAR = 7,
 }

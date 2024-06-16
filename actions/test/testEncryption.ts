@@ -1,4 +1,4 @@
-import { encryptData } from "./encryptTxNobleCurvesFullBlst.js";
+import { encryptData } from "../encryptTxNobleCurvesFullBlst.js";
 import tests from "./cryptotests_blst.json" assert { type: "json" };
 
 type Test = {
@@ -16,25 +16,20 @@ type Test = {
 };
 
 async function runTests() {
+  console.log("TEST");
   for (const test of tests as Test[]) {
-    if (test.type === "encryption" && test.id === "16") {
-      console.log("TEST");
+    if (test.type === "encryption") {
       console.log(test.name, test.id);
 
-      const encryptedMessage = await encryptData(
+      const encryptedMessage: `0x${string}` = await encryptData(
         test.test_data.message as `0x${string}`,
         test.test_data.epoch_id as `0x${string}`,
         test.test_data.eon_public_key as `0x${string}`,
         test.test_data.sigma as `0x${string}`
       );
 
-      console.log("encryptedMessage", encryptedMessage);
-      // console.log(encrypted);
-      // const encoded = encodeEncryptedMessage(encryptedMessage);
-      // console.log(encoded);
-      // console.log(encoded.toUpperCase());
-      // console.log(test.test_data.expected.toUpperCase());
-      // console.log(encoded === test.test_data.expected);
+      // console.log("encryptedMessage", encryptedMessage);
+      console.log(encryptedMessage === test.test_data.expected);
     }
   }
 }
