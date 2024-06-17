@@ -3,7 +3,7 @@ import { hexToBytes, keccak256, bytesToBigInt, bytesToHex } from "viem";
 import pkg from "lodash";
 const { zip } = pkg;
 
-import * as blstLib from "./blstNodejs/bindings.js";
+import * as blstLib from "./blstNodejs/bindings";
 import { Blst, P1, P2, PT } from "./blstNodejs/blst.hpp.js";
 
 const blsSubgroupOrderBytes = [
@@ -13,7 +13,7 @@ const blsSubgroupOrderBytes = [
 ];
 const blsSubgroupOrder = bytesToBigInt(Uint8Array.from(blsSubgroupOrderBytes));
 
-async function encryptData(
+export async function encryptData(
   msgHex: `0x${string}`,
   identityPreimageHex: `0x${string}`,
   eonKeyHex: `0x${string}`,
@@ -241,5 +241,3 @@ async function GTExp(x: PT, exp: bigint): Promise<PT> {
 
   return acc;
 }
-
-export { encryptData };

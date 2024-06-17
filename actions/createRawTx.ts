@@ -16,7 +16,7 @@ export async function prepareAndSignTransaction() {
       account: privateKeyToAccount("0x0"),
       chain: gnosisChiado,
       to: "0x97D2eEb65DA0c37dc0F43FF4691E521673eFADfd",
-      value: BigInt(10000000000000000),
+      value: BigInt("10000000000000000"),
     });
 
     const serializedTransaction = await client.signTransaction(request);

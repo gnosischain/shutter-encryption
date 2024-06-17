@@ -2,7 +2,7 @@ import { computeData } from "@/actions/encryptTxNobleCurves";
 import { Input } from "@headlessui/react";
 import clsx from "clsx";
 import * as React from "react";
-import { Address, formatEther, parseEther } from "viem";
+import { Address, parseEther } from "viem";
 import { config } from "@/wagmi";
 import { type BaseError, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { getPublicClient } from "wagmi/actions";
@@ -11,6 +11,7 @@ import keyBroadcastABI from "@/utils/abis/keyBroadcast";
 import sequencerABI from "@/utils/abis/sequencer";
 import { randomBytes } from "crypto";
 import { prepareAndSignTransaction } from "@/actions/createRawTx";
+import { encryptData } from "@/actions/encryptTxNobleCurvesFullBlst";
 
 const SEQUENCER = "0xd073BD5A717Dce1832890f2Fdd9F4fBC4555e41A";
 const KEYPERSETMANAGER = "0x7Fbc29C682f59f809583bFEE0fc50F1e4eb77774";
@@ -49,8 +50,7 @@ export function SendTransaction({ address, chainId }: SendTransactionProps) {
       const randomBytesBuffer = randomBytes(12);
       const randomHex = randomBytesBuffer.toString("hex");
       const identityPrefixHex = address + randomHex;
-      const encryptedTx = computeData(data.slice(2), address.slice(2), identityPrefixHex.slice(2), eonKeyBytes.slice(2));
-      // const identityPrefix = hexToBytes(`0x${identityPrefixHex}`, { size: 32 });
+      const encryptedTx = await encryptData(data, identityPrefixHex as `0x{string}`, eonKeyBytes, identityPrefixHex as `0x{string}`);
       writeContract({ address: SEQUENCER, abi: sequencerABI, functionName: "submitEncryptedTransaction", args: [eon, identityPrefixHex, encryptedTx, 210000], value: parseEther("210000", "gwei") });
     }
   }
