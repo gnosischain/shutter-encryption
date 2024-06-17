@@ -1,9 +1,15 @@
-import { bls12_381 } from "@noble/curves/bls12-381";
-import { hexToBytes, keccak256, bytesToBigInt, bytesToHex } from "viem";
+import {
+  hexToBytes,
+  keccak256,
+  bytesToBigInt,
+  bytesToHex,
+  numberToHex,
+  numberToBytes,
+} from "viem";
 import pkg from "lodash";
 const { zip } = pkg;
 
-import { P1, P2, PT } from "./blst.hpp";
+import { Blst, P1, P2, PT } from "./blst.hpp";
 
 const blsSubgroupOrderBytes = [
   0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09,
@@ -77,7 +83,7 @@ export function encodeEncryptedMessage(encryptedMessage: any): `0x${string}` {
   const bytes = new Uint8Array(totalLength);
 
   bytes[0] = encryptedMessage.VersionId;
-  bytes.set(encryptedMessage.c1.toRawBytes(true), 1);
+  bytes.set(encryptedMessage.c1, 1);
   bytes.set(encryptedMessage.c2, 1 + c1Length);
   encryptedMessage.c3.forEach((block: ArrayLike<number>, i: number) => {
     const offset = 1 + c1Length + c2Length + 32 * i;
@@ -94,15 +100,10 @@ function computeR(sigmaHex: string, msgHex: string): bigint {
 }
 
 function computeC1(r: bigint) {
-  const rLittleEndianBytes = bigintToLittleEndianBytes(r, 32);
-  const rLittleEndian = bytesToBigInt(rLittleEndianBytes.reverse());
-  if (rLittleEndian <= BigInt(0) || rLittleEndian >= bls12_381.G2.CURVE.n) {
-    throw new Error(`Invalid value for rLittleEndian: ${rLittleEndian}`);
-  }
-  const g2Generator = bls12_381.G2.ProjectivePoint.BASE;
-
-  const result = g2Generator.multiply(rLittleEndian);
-  return result;
+  const blst = window.blst as Blst;
+  const scalar = new blst.Scalar().from_bendian(numberToBytes(r)).to_lendian();
+  const c1 = blst.P2.generator().mult(scalar).compress();
+  return c1;
 }
 
 async function computeC2(
@@ -160,15 +161,6 @@ function hash4(bytes: Uint8Array): Uint8Array {
 }
 
 //======================================
-function bigintToLittleEndianBytes(bigint: bigint, length: number): Uint8Array {
-  const bytes = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    bytes[i] = Number(bigint & BigInt(0xff));
-    bigint >>= BigInt(8);
-  }
-  return bytes;
-}
-
 function xorBlocks(x: Uint8Array, y: Uint8Array): Uint8Array {
   if (x.length !== y.length) {
     throw new Error("Both byte arrays must be of the same length.");

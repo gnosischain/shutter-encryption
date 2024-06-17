@@ -1,4 +1,4 @@
-import { encryptData } from "./encryptTxNobleCurvesFullBlst";
+import { encryptData } from "./encryptDataBlst";
 import tests from "./cryptotests_blst.json" assert { type: "json" };
 
 type Test = {
@@ -27,6 +27,9 @@ async function runTests() {
         test.test_data.eon_public_key as `0x${string}`,
         test.test_data.sigma as `0x${string}`
       );
+      // console.log(encryptedMessage);
+      // console.log("expected");
+      // console.log(test.test_data.expected);
       console.log(encryptedMessage === test.test_data.expected);
     }
   }
