@@ -35,4 +35,9 @@ async function runTests() {
   }
 }
 
-export { runTests };
+async function runEncryptData(message: `0x${string}`, epoch_id: `0x${string}`, eon_public_key: `0x${string}`, sigma: `0x${string}`) {
+  const encryptedMessage = await encryptData(message, epoch_id, eon_public_key, sigma);
+  return encryptedMessage;
+}
+
+export { runTests, runEncryptData };

@@ -3,17 +3,13 @@ import { Input } from "@headlessui/react";
 import clsx from "clsx";
 import { Address, parseEther } from "viem";
 import { config } from "@/wagmi";
-import {
-  type BaseError,
-  useWaitForTransactionReceipt,
-  useWriteContract,
-} from "wagmi";
+import { type BaseError, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { getPublicClient } from "wagmi/actions";
 import keyperSetManagerABI from "@/utils/abis/keyperSetManager";
 import keyBroadcastABI from "@/utils/abis/keyBroadcast";
 import sequencerABI from "@/utils/abis/sequencer";
 import { randomBytes } from "crypto";
-import { runTests } from "@/shutter/testEncryption";
+import { runEncryptData, runTests } from "@/shutter/testEncryption";
 // import { prepareAndSignTransaction } from "@/actions/createRawTx";
 // import { encryptData } from "@/actions/encryptTxNobleCurvesFullBlst";
 
@@ -62,26 +58,20 @@ export function SendTransaction({ address, chainId }: SendTransactionProps) {
       const randomBytesBuffer = randomBytes(12);
       const randomHex = randomBytesBuffer.toString("hex");
       const identityPrefixHex = address + randomHex;
-      // const encryptedTx = await encryptData(
-      //   data,
-      //   identityPrefixHex as `0x{string}`,
-      //   eonKeyBytes,
-      //   identityPrefixHex as `0x{string}`
-      // );
-      // writeContract({
-      //   address: SEQUENCER,
-      //   abi: sequencerABI,
-      //   functionName: "submitEncryptedTransaction",
-      //   args: [eon, identityPrefixHex, encryptedTx, 210000],
-      //   value: parseEther("210000", "gwei"),
-      // });
+      const encryptedTx = await runEncryptData(data, identityPrefixHex as `0x{string}`, eonKeyBytes, identityPrefixHex as `0x{string}`);
+      writeContract({
+        address: SEQUENCER,
+        abi: sequencerABI,
+        functionName: "submitEncryptedTransaction",
+        args: [eon, identityPrefixHex, encryptedTx, 210000],
+        value: parseEther("210000", "gwei"),
+      });
     }
   }
 
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({
-      hash,
-    });
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+  });
 
   const testEncryption = async () => {
     if (!window.blst) {
@@ -93,31 +83,16 @@ export function SendTransaction({ address, chainId }: SendTransactionProps) {
 
   return (
     <form onSubmit={submit}>
-      <Input
-        name="data"
-        type="text"
-        required
-        placeholder="0xA0Cf…251e"
-        className={clsx(
-          "mt-3 block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white",
-          "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25"
-        )}
-      />
+      <Input name="data" type="text" required placeholder="0xA0Cf…251e" className={clsx("mt-3 block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white", "focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25")} />
       <button disabled={isPending} type="submit">
         {isPending ? "Confirming..." : "Send"}
       </button>
       {hash && <div>Transaction Hash: {hash}</div>}
       {isConfirming && <div>Waiting for confirmation...</div>}
       {isConfirmed && <div>Transaction confirmed.</div>}
-      {error && (
-        <div>Error: {(error as BaseError).shortMessage || error.message}</div>
-      )}
+      {error && <div>Error: {(error as BaseError).shortMessage || error.message}</div>}
       <div>
-        <button
-          className="rounded-md bg-black/20 border border-white text-white py-2 px-4 text-sm m-4"
-          onClick={testEncryption}
-          type="button"
-        >
+        <button className="rounded-md bg-black/20 border border-white text-white py-2 px-4 text-sm m-4" onClick={testEncryption} type="button">
           Test encryption
         </button>
       </div>
