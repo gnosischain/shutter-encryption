@@ -34,7 +34,6 @@ export const Select = ({ items, handleChange, selectedItem, title }: SelectProps
       onChange={handleSelectionChange}
       label={title}
       isDisabled={!handleChange}
-      variant="bordered"
       classNames={{
         label: 'group-data-[filled=true]:-translate-y-4 text-lg',
         trigger: 'min-h-16 focus:outline-none border-none',

@@ -1,10 +1,10 @@
-import { EncryptionForm } from './EncryptionForm';
+import { FormsWrapper } from './FormsWrapper';
 import { FAQAccordion } from './FAQAccordion';
 
 export const MainPage = () => {
   return (
     <div className="flex items-center w-full flex-col m-4">
-      <EncryptionForm />
+      <FormsWrapper />
 
       <FAQAccordion />
     </div>
