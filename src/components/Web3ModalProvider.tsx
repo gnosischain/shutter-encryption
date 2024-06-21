@@ -4,7 +4,7 @@ import { WagmiProvider } from 'wagmi';
 import { gnosisChiado } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import config from '@/contants/config';
+import config from '@/constants/config';
 
 const queryClient = new QueryClient();
 
