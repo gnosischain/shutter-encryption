@@ -11,7 +11,7 @@ export const ProgressInfoCard = ({ status }: ProgressInfoCardProps) => {
     <Card className="m-4 h-60">
       <CardBody>
         <p className="text-sm text-default-500 m-2">
-          {status === 0 ? (<span className="flex gap-3"><Spinner size="sm" /> Preparing transaction...</span>) : status > 0 && 'Transaction prepared.'}
+          {status === 0 ? (<span className="flex gap-3">Preparing transaction...</span>) : status > 0 && 'Transaction prepared.'}
         </p>
         <p className="text-sm text-default-500 m-2">
           {status === 1 ? (<span className="flex gap-3"><Spinner size="sm" /> Signing transaction...</span>) : status > 1 && 'Transaction signed.'}
