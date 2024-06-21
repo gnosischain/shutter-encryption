@@ -57,7 +57,13 @@ export const CHAINS: EnhancedChain[] = [
       },
     ]
   },
-  // ...gnosis,
+  // {
+  //   ...gnosis,
+  //   img: '/gnosis.svg',
+  //   tokens: [
+  //     nativeXDaiToken,
+  //   ]
+  // },
 ];
 
 export const CHAINS_MAP = CHAINS.reduce<ChainMap>((acc, chain) => {
