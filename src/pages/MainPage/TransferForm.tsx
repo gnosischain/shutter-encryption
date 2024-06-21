@@ -9,7 +9,7 @@ import { useTokenBalance } from '@/hooks/useTokenBalance';
 const mappedChains = mapChainsToOptions(CHAINS);
 const defaultToken = mapTokenToOption(CHAINS[0].tokens[0]);
 
-export const EncryptionForm = () => {
+export const TransferForm = () => {
   const [chain, setChain] = useState(mappedChains[0]);
   const [token, setToken] = useState(defaultToken);
   const [amount, setAmount] = useState(0);
@@ -30,7 +30,7 @@ export const EncryptionForm = () => {
   const mappedTokens = useMemo(() => chain && mapTokensToOptions(chain.tokens), [chain]);
 
   return (
-    <div className="w-96 p-4">
+    <div>
       <div className="my-4">
         <Select
           items={mappedChains}
@@ -68,7 +68,7 @@ export const EncryptionForm = () => {
 
       <Input
         label="To"
-        placeholder="0x..."
+        placeholder="0x7d5c..."
         className="my-2"
         variant="bordered"
         value={to}

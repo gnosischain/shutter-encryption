@@ -11,6 +11,25 @@ export default {
     extend: {},
   },
   darkMode: "class",
-  plugins: [nextui()]
+  plugins: [
+    nextui({
+      addCommonColors: true,
+      themes: {
+        light: {
+          colors: {
+            primary: {
+              DEFAULT: "#3E6956",
+            },
+          },
+        },
+        dark: {
+          colors: {
+            primary: {
+            },
+          },
+        },
+      },
+    }),
+  ]
 }
 
