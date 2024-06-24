@@ -13,9 +13,9 @@ import { runEncryptData, runTests } from "@/shutter/testEncryption";
 // import { prepareAndSignTransaction } from "@/actions/createRawTx";
 // import { encryptData } from "@/actions/encryptTxNobleCurvesFullBlst";
 
-const SEQUENCER = "0xd073BD5A717Dce1832890f2Fdd9F4fBC4555e41A";
-const KEYPERSETMANAGER = "0x7Fbc29C682f59f809583bFEE0fc50F1e4eb77774";
-const KEYBROADCAST = "0x1FD85EfeC5FC18f2f688f82489468222dfC36d6D";
+const SEQUENCER = "0x5a6af25e3cc5eB6c146cb4d7D00148Dd59ad58f1";
+const KEYPERSETMANAGER = "0x6759Ab83de6f7d5bc4cf02d41BbB3Bd1500712E1";
+const KEYBROADCAST = "0xDd9Ea21f682a6484ac40D36c97Fa056Fbce9004f";
 const tKeyperSetChangeLookAhead = BigInt(4);
 
 interface SendTransactionProps {
@@ -59,6 +59,7 @@ export function SendTransaction({ address, chainId }: SendTransactionProps) {
       const randomHex = randomBytesBuffer.toString("hex");
       const identityPrefixHex = address + randomHex;
       const encryptedTx = await runEncryptData(data, identityPrefixHex as `0x{string}`, eonKeyBytes, identityPrefixHex as `0x{string}`);
+      console.log(eon, identityPrefixHex, encryptedTx, eonKeyBytes);
       writeContract({
         address: SEQUENCER,
         abi: sequencerABI,
