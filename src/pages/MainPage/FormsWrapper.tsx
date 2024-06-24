@@ -1,5 +1,9 @@
-import { Tabs, Tab, Button } from '@nextui-org/react';
-import { useState } from 'react';
+import { Tabs, Tab } from '@nextui-org/react';
+import { useState, useCallback } from 'react';
+import { type UsePrepareTransactionRequestReturnType } from 'wagmi';
+import { type SignTransactionReturnType } from 'viem';
+
+import { useSignTransaction } from '@/hooks/useSignTransaction';
 
 import { TransferForm } from './TransferForm';
 import { AdvancedForm } from './AdvancedForm';
@@ -14,22 +18,55 @@ import { ProgressInfoCard } from './ProgressInfoCard';
 
 export const FormsWrapper = () => {
   const [status, setStatus] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
+  const [signedTx, setSignedTx] = useState<SignTransactionReturnType>('0x02');
+
+  const signTx = useSignTransaction();
+
+  const submit = useCallback(async (tx: UsePrepareTransactionRequestReturnType) => {
+    if (!tx.data) return;
+
+    console.log({ tx });
+
+    if (status === 0) {
+      // sign tx
+      const signedTx = await signTx({
+        ...tx.data,
+        nonce: tx.data.nonce + 1,
+      });
+
+      console.log({ signedTx })
+
+      setSignedTx(signedTx);
+    }
+    if (status === 1) {
+      // encrypt tx
+
+    }
+    if (status === 3) {
+      setStatus(0);
+    }
+
+    // @ts-expect-error - this is more easy interaction between the transaction statuses
+    setStatus(s => s+1);
+  }, [status, signedTx]);
 
   return (
     <div className="flex flex-col md:flex-row">
       <div className="w-96 p-4">
         <Tabs fullWidth color="primary" className="">
           <Tab className="focus:outline-none" key="transfer" title="Transfer">
-            <TransferForm />
+            <TransferForm
+              submit={submit}
+              status={status}
+            />
           </Tab>
           <Tab className="focus:outline-none" key="advanced" title="Advanced">
-            <AdvancedForm />
+            <AdvancedForm
+              submit={submit}
+              status={status}
+            />
           </Tab>
         </Tabs>
-
-        <Button onClick={() => setStatus(s => s+1)} color="primary" className="w-full mt-4 focus:outline-none">
-          Encrypt
-        </Button>
       </div>
 
       <ProgressInfoCard status={status} />

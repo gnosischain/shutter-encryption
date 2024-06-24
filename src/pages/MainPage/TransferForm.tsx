@@ -1,15 +1,25 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Input } from '@nextui-org/react';
+import { usePrepareTransactionRequest, type UsePrepareTransactionRequestReturnType } from 'wagmi';
+import { type Hex, parseEther } from 'viem';
 
-import { CHAINS } from '@/constants/chains';
+import { CHAINS, nativeXDaiToken } from '@/constants/chains';
 import { mapChainsToOptions, mapTokensToOptions, mapTokenToOption } from '@/utils/mappers';
 import { Select } from '@/components/Select';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
+import { encodeDataForTransfer } from '@/utils/eth';
+
+import { SubmitButton } from './SubmitButton';
 
 const mappedChains = mapChainsToOptions(CHAINS);
 const defaultToken = mapTokenToOption(CHAINS[0].tokens[0]);
 
-export const TransferForm = () => {
+interface TransferFormProps {
+  submit: (tx: UsePrepareTransactionRequestReturnType) => void,
+  status: number,
+}
+
+export const TransferForm = ({ submit, status }: TransferFormProps) => {
   const [chain, setChain] = useState(mappedChains[0]);
   const [token, setToken] = useState(defaultToken);
   const [amount, setAmount] = useState(0);
@@ -28,6 +38,25 @@ export const TransferForm = () => {
   }, [chain]);
 
   const mappedTokens = useMemo(() => chain && mapTokensToOptions(chain.tokens), [chain]);
+
+  const data = useMemo(() => {
+    if (token?.address === nativeXDaiToken.address || !balance) {
+      return '0x' as Hex;
+    }
+
+    return encodeDataForTransfer(to, amount, balance.decimals) as Hex;
+  }, [token, balance, to, amount]);
+
+  const result = usePrepareTransactionRequest({
+    data,
+    chainId: chain.chainId,
+    to: token?.address === nativeXDaiToken.address ? to : token?.address,
+    value: token?.address === nativeXDaiToken.address ? parseEther(amount.toString()) : 0 as unknown as bigint,
+  });
+
+  const onSubmit = useCallback(() => {
+    submit(result);
+  }, [submit, result]);
 
   return (
     <div>
@@ -74,6 +103,8 @@ export const TransferForm = () => {
         value={to}
         onChange={useCallback((e: any) => setTo(e.target.value), [])}
       />
+
+      <SubmitButton status={status} submit={onSubmit} />
     </div>
   )
 };
