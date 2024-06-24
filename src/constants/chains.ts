@@ -33,15 +33,15 @@ export const CHAINS: EnhancedChain[] = [
     contracts: {
       ...gnosisChiado.contracts,
       sequencer: {
-        address: '0xd073BD5A717Dce1832890f2Fdd9F4fBC4555e41A',
+        address: '0x5a6af25e3cc5eB6c146cb4d7D00148Dd59ad58f1',
         // blockCreated: ,
       },
       keyperSetManager: {
-        address: '0x7Fbc29C682f59f809583bFEE0fc50F1e4eb77774',
+        address: '0x6759Ab83de6f7d5bc4cf02d41BbB3Bd1500712E1',
         // blockCreated: ,
       },
       keyBroadcast: {
-        address: '0x1FD85EfeC5FC18f2f688f82489468222dfC36d6D',
+        address: '0xDd9Ea21f682a6484ac40D36c97Fa056Fbce9004f',
         // blockCreated: ,
       },
     },
