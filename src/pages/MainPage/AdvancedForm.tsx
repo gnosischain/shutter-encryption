@@ -5,9 +5,10 @@ import { SubmitButton } from './SubmitButton';
 interface AdvancedFormProps {
   submit: () => void,
   status: number,
+  isSubmitDisabled: boolean,
 }
 
-export const AdvancedForm = ({ submit, status }: AdvancedFormProps) => {
+export const AdvancedForm = ({ submit, status, isSubmitDisabled }: AdvancedFormProps) => {
   return (
     <div>
       <div className="flex flex-col items-center mt-4 text-nowrap">
@@ -18,6 +19,7 @@ export const AdvancedForm = ({ submit, status }: AdvancedFormProps) => {
       <SubmitButton
         submit={submit}
         status={status}
+        isSubmitDisabled={isSubmitDisabled}
       />
     </div>
   )

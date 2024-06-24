@@ -1,4 +1,5 @@
 import { gnosisChiado, type Chain } from 'wagmi/chains';
+import { type Address } from 'viem';
 
 type Token = {
   address: string;
@@ -10,7 +11,21 @@ type Token = {
 
 type EnhancedChain = Chain & {
   img: string;
-  contracts: Pick<Chain, 'contracts'>;
+  contracts: Pick<Chain, 'contracts'> & {
+    sequencer: {
+      address: Address;
+      blockCreated?: number;
+    };
+    keyperSetManager: {
+      address: Address;
+      blockCreated?: number;
+    };
+    keyBroadcast: {
+      address: Address;
+      blockCreated?: number;
+    };
+
+  };
   tokens: Token[];
 };
 

@@ -3,6 +3,7 @@ import { Button } from '@nextui-org/react';
 interface SubmitButtonProps {
   submit: () => void,
   status: number,
+  isSubmitDisabled: boolean,
 }
 
 const getStatusText = (status: number) => {
@@ -18,9 +19,9 @@ const getStatusText = (status: number) => {
   }
 }
 
-export const SubmitButton = ({ submit, status }: SubmitButtonProps) => {
+export const SubmitButton = ({ submit, status, isSubmitDisabled }: SubmitButtonProps) => {
   return (
-    <Button onClick={submit} color="primary" className="w-full mt-4 focus:outline-none">
+    <Button onClick={submit} color="primary" className="w-full mt-4 focus:outline-none" isDisabled={isSubmitDisabled}>
       {getStatusText(status)}
     </Button>
   )

@@ -5,8 +5,6 @@ import { createWalletClient, custom } from 'viem';
 export const useCreateWalletClient = () => {
   const { address, chain } = useAccount();
 
-  console.log({ address, chain });
-
   return useMemo(() => {
     return createWalletClient({
       account: address,

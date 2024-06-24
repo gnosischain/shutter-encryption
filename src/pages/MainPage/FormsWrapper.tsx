@@ -1,9 +1,11 @@
 import { Tabs, Tab } from '@nextui-org/react';
 import { useState, useCallback } from 'react';
 import { type UsePrepareTransactionRequestReturnType } from 'wagmi';
-import { type SignTransactionReturnType } from 'viem';
+import { type SignTransactionReturnType, type Hex } from 'viem';
 
 import { useSignTransaction } from '@/hooks/useSignTransaction';
+import { useShutterEncryption } from '@/hooks/useShutterEncryption';
+import sequencerABI from '@/abis/sequencerABI';
 
 import { TransferForm } from './TransferForm';
 import { AdvancedForm } from './AdvancedForm';
@@ -19,8 +21,10 @@ import { ProgressInfoCard } from './ProgressInfoCard';
 export const FormsWrapper = () => {
   const [status, setStatus] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
   const [signedTx, setSignedTx] = useState<SignTransactionReturnType>('0x02');
+  const [encryptedTx, setEncryptedTx] = useState<Hex>('0x');
 
   const signTx = useSignTransaction();
+  const { encryptTx, isLoading: isEncryptionParamsLoading } = useShutterEncryption({ signedTx });
 
   const submit = useCallback(async (tx: UsePrepareTransactionRequestReturnType) => {
     if (!tx.data) return;
@@ -40,6 +44,16 @@ export const FormsWrapper = () => {
     }
     if (status === 1) {
       // encrypt tx
+      const encryption = await encryptTx();
+      console.log({ encryption });
+
+      if (encryption) {
+        setEncryptedTx(encryption);
+      }
+    }
+    if (status === 2) {
+      // submit tx
+
 
     }
     if (status === 3) {
@@ -56,12 +70,14 @@ export const FormsWrapper = () => {
         <Tabs fullWidth color="primary" className="">
           <Tab className="focus:outline-none" key="transfer" title="Transfer">
             <TransferForm
+              isSubmitDisabled={isEncryptionParamsLoading}
               submit={submit}
               status={status}
             />
           </Tab>
           <Tab className="focus:outline-none" key="advanced" title="Advanced">
             <AdvancedForm
+              isSubmitDisabled={isEncryptionParamsLoading}
               submit={submit}
               status={status}
             />
