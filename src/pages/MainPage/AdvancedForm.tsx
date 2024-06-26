@@ -1,14 +1,20 @@
 import { Textarea } from '@nextui-org/input';
+import { useCallback } from 'react';
+import type { UsePrepareTransactionRequestReturnType } from 'wagmi';
 
 import { SubmitButton } from './SubmitButton';
 
 interface AdvancedFormProps {
-  submit: () => void,
+  submit: (tx: UsePrepareTransactionRequestReturnType) => void,
   status: number,
   isSubmitDisabled: boolean,
 }
 
 export const AdvancedForm = ({ submit, status, isSubmitDisabled }: AdvancedFormProps) => {
+  const onSubmit = useCallback(() => {
+    // submit();
+  }, [submit]);
+
   return (
     <div>
       <div className="flex flex-col items-center mt-4 text-nowrap">
@@ -17,7 +23,7 @@ export const AdvancedForm = ({ submit, status, isSubmitDisabled }: AdvancedFormP
       </div>
 
       <SubmitButton
-        submit={submit}
+        submit={onSubmit}
         status={status}
         isSubmitDisabled={isSubmitDisabled}
       />

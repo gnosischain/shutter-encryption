@@ -3,13 +3,16 @@ import {
   keccak256,
   bytesToBigInt,
   bytesToHex,
-  numberToHex,
   numberToBytes,
 } from "viem";
 import pkg from "lodash";
 const { zip } = pkg;
 
 import { Blst, P1, P2, PT } from "./blst.hpp.ts";
+
+declare global {
+  interface Window { blst: any; }
+}
 
 const blsSubgroupOrderBytes = [
   0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09,
@@ -204,8 +207,8 @@ function padAndSplit(bytes: Uint8Array): Uint8Array[] {
 async function GTExp(x: PT, exp: bigint): Promise<PT> {
   const blst = window.blst;
 
-  let a: PT = x;
-  let acc: PT = blst.PT.one();
+  const a: PT = x;
+  const acc: PT = blst.PT.one();
 
   while (exp > BigInt(0)) {
     if (exp & BigInt(1)) {
