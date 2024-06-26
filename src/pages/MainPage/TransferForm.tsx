@@ -50,7 +50,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
 
   const result = usePrepareTransactionRequest({
     data,
-    chainId: chain.chainId,
+    chainId: chain.id,
     to: token?.address === nativeXDaiToken.address ? to : token?.address,
     value: token?.address === nativeXDaiToken.address ? parseEther(amount.toString()) : 0 as unknown as bigint,
   });

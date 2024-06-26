@@ -1,9 +1,10 @@
-import { useCallback } from 'react';
-import { useReadContract, useChainId, useBlockNumber, useAccount } from 'wagmi';
-import { type SignTransactionReturnType, type Hex } from 'viem';
+import { useCallback, useMemo } from 'react';
+import { useReadContract, useChainId, useBlockNumber, useAccount, useWriteContract } from 'wagmi';
+import { type SignTransactionReturnType, type Hex, parseEther } from 'viem';
 
 import keyBroadcastABI from '@/abis/keyBroadcastABI';
 import keyperSetManagerABI from '@/abis/keyperSetManagerABI';
+import sequencerABI from '@/abis/sequencerABI';
 import { CHAINS_MAP } from '@/constants/chains';
 import { encryptData } from '@/services/shutter/encryptDataBlst';
 
@@ -16,15 +17,12 @@ function randomBytes(size: number) {
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
-interface UseShutterEncryptionProps {
-  signedTx: SignTransactionReturnType;
-}
-
-export const useShutterEncryption = ({ signedTx }: UseShutterEncryptionProps) => {
+export const useShutterEncryption = () => {
   const { data: blockNumber } = useBlockNumber();
   const chainId = useChainId();
   const { address } = useAccount();
-  const chain = CHAINS_MAP[chainId];
+  const { writeContractAsync } = useWriteContract();
+  const chain = useMemo(() => CHAINS_MAP[chainId], [chainId]);
 
   const { data: eon, ...eonRest } = useReadContract({
     address: chain.contracts.keyperSetManager.address,
@@ -33,7 +31,7 @@ export const useShutterEncryption = ({ signedTx }: UseShutterEncryptionProps) =>
     // @ts-expect-error - disabled query if address is not defined
     args: [Number(blockNumber) + tKeyperSetChangeLookAhead],
     query: {
-      enabled: Boolean(blockNumber && signedTx),
+      enabled: Boolean(blockNumber),
     },
   });
 
@@ -44,23 +42,40 @@ export const useShutterEncryption = ({ signedTx }: UseShutterEncryptionProps) =>
     // @ts-expect-error - disabled query if eon is not defined
     args: [eon],
     query: {
-      enabled: Boolean(eon && signedTx),
+      enabled: Boolean(eon),
     },
   });
 
-  const encryptTx = useCallback(async () => {
-    if (!signedTx || !eonKeyBytes) return;
+  const encryptTx = useCallback(async (signedTx: SignTransactionReturnType) => {
+    if (!eonKeyBytes) return;
 
     const randomHex = randomBytes(12);
     const identityPrefixHex = address + randomHex as Hex;
 
     console.log({ signedTx, identityPrefixHex, eonKeyBytes, randomHex });
 
-    return await encryptData(signedTx, identityPrefixHex, eonKeyBytes, identityPrefixHex);
-  }, [signedTx, eonKeyBytes, address]);
+    const encryptedTx = await encryptData(signedTx, identityPrefixHex, eonKeyBytes, identityPrefixHex);
+
+    return { identityPrefixHex, encryptedTx };
+  }, [eonKeyBytes, address]);
+
+  const submitTransactionToSequencer = useCallback(async (encryptionParams?: { identityPrefixHex: Hex, encryptedTx: Hex }) => {
+    if (!encryptionParams) return;
+
+    const { identityPrefixHex, encryptedTx } = encryptionParams;
+
+    return await writeContractAsync({
+      address: chain.contracts.sequencer.address,
+      abi: sequencerABI,
+      functionName: "submitEncryptedTransaction",
+      args: [eon, identityPrefixHex, encryptedTx, 210000],
+      value: parseEther("210000", "gwei"),
+    });
+  }, [chain, eon]);
 
   return {
     encryptTx,
+    submitTransactionToSequencer,
     isLoading: eonRest.isLoading || eonKeyBytesRest.isLoading,
   };
 };

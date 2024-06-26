@@ -1,11 +1,10 @@
 import { Tabs, Tab } from '@nextui-org/react';
 import { useState, useCallback } from 'react';
 import { type UsePrepareTransactionRequestReturnType } from 'wagmi';
-import { type SignTransactionReturnType, type Hex } from 'viem';
+import { type Hash } from 'viem';
 
 import { useSignTransaction } from '@/hooks/useSignTransaction';
 import { useShutterEncryption } from '@/hooks/useShutterEncryption';
-import sequencerABI from '@/abis/sequencerABI';
 
 import { TransferForm } from './TransferForm';
 import { AdvancedForm } from './AdvancedForm';
@@ -16,53 +15,51 @@ import { ProgressInfoCard } from './ProgressInfoCard';
 // status = 2 -> encrypting
 // status = 3 -> submitting
 // status = 4 -> submitted tx
-// status = 5 -> original tx
 
 export const FormsWrapper = () => {
-  const [status, setStatus] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
-  const [signedTx, setSignedTx] = useState<SignTransactionReturnType>('0x02');
-  const [encryptedTx, setEncryptedTx] = useState<Hex>('0x');
+  const [status, setStatus] = useState<0 | 1 | 2 | 3 | 4>(0);
+  const [submittedTxHash, setSubmittedTxHash] = useState<Hash>();
 
   const signTx = useSignTransaction();
-  const { encryptTx, isLoading: isEncryptionParamsLoading } = useShutterEncryption({ signedTx });
+  const { encryptTx, submitTransactionToSequencer, isLoading: isEncryptionParamsLoading } = useShutterEncryption();
 
   const submit = useCallback(async (tx: UsePrepareTransactionRequestReturnType) => {
-    if (!tx.data) return;
+    try {
+      if (status === 4) {
+        setStatus(0);
+        return;
+      }
 
-    console.log({ tx });
+      if (!tx.data) return;
 
-    if (status === 0) {
+      console.log({ tx });
+
+      setStatus(1);
+
       // sign tx
       const signedTx = await signTx({
         ...tx.data,
         nonce: tx.data.nonce + 1,
       });
+      console.log({ signedTx });
+      setStatus(2);
 
-      console.log({ signedTx })
-
-      setSignedTx(signedTx);
-    }
-    if (status === 1) {
       // encrypt tx
-      const encryption = await encryptTx();
-      console.log({ encryption });
+      const encryptionParams = await encryptTx(signedTx);
+      console.log({ encryptionParams });
+      setStatus(3);
 
-      if (encryption) {
-        setEncryptedTx(encryption);
-      }
-    }
-    if (status === 2) {
-      // submit tx
+      // submit tx to sequencer
+      const hash = await submitTransactionToSequencer(encryptionParams);
+      console.log({ hash });
+      setStatus(4);
 
-
-    }
-    if (status === 3) {
+      setSubmittedTxHash(hash);
+    } catch (err) {
+      console.log(err);
       setStatus(0);
     }
-
-    // @ts-expect-error - this is more easy interaction between the transaction statuses
-    setStatus(s => s+1);
-  }, [status, signedTx]);
+  }, [status, signTx, encryptTx, submitTransactionToSequencer]);
 
   return (
     <div className="flex flex-col md:flex-row">
@@ -85,7 +82,7 @@ export const FormsWrapper = () => {
         </Tabs>
       </div>
 
-      <ProgressInfoCard status={status} />
+      <ProgressInfoCard status={status} submittedTxHash={submittedTxHash} />
     </div>
   )
 };

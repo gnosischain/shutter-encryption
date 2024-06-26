@@ -61,6 +61,13 @@ export const CHAINS: EnhancedChain[] = [
       },
     },
 
+    blockExplorers: {
+      default: {
+        ...gnosisChiado.blockExplorers.default,
+        url: 'https://gnosis-chiado.blockscout.com/',
+      },
+    },
+
     tokens: [
       nativeXDaiToken,
       {

@@ -11,9 +11,11 @@ const getStatusText = (status: number) => {
     case 0:
       return 'Sign Transaction';
     case 1:
-      return 'Encrypt Transaction';
+      return 'Signing Transaction';
     case 2:
-      return 'Submit Transaction';
+      return 'Encrypting Transaction';
+    case 3:
+      return 'Submitting Transaction';
     default:
       return 'New Transaction';
   }
@@ -21,7 +23,7 @@ const getStatusText = (status: number) => {
 
 export const SubmitButton = ({ submit, status, isSubmitDisabled }: SubmitButtonProps) => {
   return (
-    <Button onClick={submit} color="primary" className="w-full mt-4 focus:outline-none" isDisabled={isSubmitDisabled}>
+    <Button isLoading={status !== 0 && status !== 4} onClick={submit} color="primary" className="w-full mt-4 focus:outline-none" isDisabled={isSubmitDisabled}>
       {getStatusText(status)}
     </Button>
   )
