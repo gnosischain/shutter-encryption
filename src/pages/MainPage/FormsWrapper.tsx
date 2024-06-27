@@ -62,7 +62,7 @@ export const FormsWrapper = () => {
   }, [status, signTx, encryptTx, submitTransactionToSequencer]);
 
   return (
-    <div className="flex flex-col md:flex-row">
+    <div className="flex flex-col">
       <div className="w-96 p-4">
         <Tabs fullWidth color="primary" className="">
           <Tab className="focus:outline-none" key="transfer" title="Transfer">
