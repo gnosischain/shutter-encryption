@@ -70,7 +70,7 @@ async function encrypt(
   );
 
   return {
-    VersionId: 0x2,
+    VersionId: 0x3,
     c1: c1,
     c2: c2,
     c3: c3,
