@@ -17,10 +17,11 @@ export async function prepareAndSignTransaction() {
       chain: gnosisChiado,
       to: "0x97D2eEb65DA0c37dc0F43FF4691E521673eFADfd",
       value: BigInt("10000000000000000"),
+      nonce: 23,
     });
 
     const serializedTransaction = await client.signTransaction(request);
-    console.log("Raw Transaction Hex:", serializedTransaction);
+    console.log("Raw Transaction Hex:", serializedTransaction, request);
     return serializedTransaction;
   } catch (error) {
     console.error("Error preparing or signing the transaction:", error);

@@ -10,10 +10,10 @@ import keyBroadcastABI from "@/utils/abis/keyBroadcast";
 import sequencerABI from "@/utils/abis/sequencer";
 import { randomBytes } from "crypto";
 import { runEncryptData, runTests } from "@/shutter/testEncryption";
-// import { prepareAndSignTransaction } from "@/actions/createRawTx";
+import { prepareAndSignTransaction } from "@/actions/createRawTx";
 // import { encryptData } from "@/actions/encryptTxNobleCurvesFullBlst";
 
-const SEQUENCER = "0x5a6af25e3cc5eB6c146cb4d7D00148Dd59ad58f1";
+const SEQUENCER = "0xAC3209DCBced710Dc2612bD714b9EC947a6d1e8f";
 const KEYPERSETMANAGER = "0x6759Ab83de6f7d5bc4cf02d41BbB3Bd1500712E1";
 const KEYBROADCAST = "0xDd9Ea21f682a6484ac40D36c97Fa056Fbce9004f";
 const tKeyperSetChangeLookAhead = BigInt(4);
@@ -34,7 +34,8 @@ export function SendTransaction({ address, chainId }: SendTransactionProps) {
     chainId: chainId as 100 | 10200 | undefined,
   });
   const { data: hash, error, isPending, writeContract } = useWriteContract();
-  // const data = prepareAndSignTransaction();
+  const data = prepareAndSignTransaction();
+  console.log(data);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
