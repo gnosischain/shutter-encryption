@@ -41,10 +41,6 @@ export async function computeIdentityP1(preimage: `0x${string}`): Promise<P1> {
     ("0x1" + preimage.slice(2)) as `0x${string}`
   );
 
-  console.log("compute identity", bytesToHex(preimageBytes));
-
-  // "0164336A17003CDCCDE3CEBECFF1CDEC2F9AEEDB7D35DD1A46C48A8AA165359CEB64336A17003CDCCDE3CEBECFF1CDEC2F9AEEDB7D"
-
   const blst = window.blst;
   const identity = new blst.P1().hash_to(
     preimageBytes,
