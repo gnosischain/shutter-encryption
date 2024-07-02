@@ -1,5 +1,5 @@
-import { gnosisChiado, type Chain } from 'wagmi/chains';
-import { type Address } from 'viem';
+import { gnosisChiado, type Chain } from "wagmi/chains";
+import { type Address } from "viem";
 
 type Token = {
   address: string;
@@ -11,7 +11,7 @@ type Token = {
 
 type EnhancedChain = Chain & {
   img: string;
-  contracts: Pick<Chain, 'contracts'> & {
+  contracts: Pick<Chain, "contracts"> & {
     sequencer: {
       address: Address;
       blockCreated?: number;
@@ -24,7 +24,6 @@ type EnhancedChain = Chain & {
       address: Address;
       blockCreated?: number;
     };
-
   };
   tokens: Token[];
 };
@@ -34,29 +33,29 @@ type ChainMap = {
 };
 
 export const nativeXDaiToken: Token = {
-  address: '0x0000000000000000000000000000000000000000',
-  name: 'xDai',
-  symbol: 'xDai',
+  address: "0x0000000000000000000000000000000000000000",
+  name: "xDai",
+  symbol: "xDai",
   decimals: 18,
-  img: '/gnosis.svg',
+  img: "/gnosis.svg",
 };
 
 export const CHAINS: EnhancedChain[] = [
   {
     ...gnosisChiado,
-    img: '/gnosis.svg',
+    img: "/gnosis.svg",
     contracts: {
       ...gnosisChiado.contracts,
       sequencer: {
-        address: '0x5a6af25e3cc5eB6c146cb4d7D00148Dd59ad58f1',
+        address: "0xAC3209DCBced710Dc2612bD714b9EC947a6d1e8f",
         // blockCreated: ,
       },
       keyperSetManager: {
-        address: '0x6759Ab83de6f7d5bc4cf02d41BbB3Bd1500712E1',
+        address: "0x6759Ab83de6f7d5bc4cf02d41BbB3Bd1500712E1",
         // blockCreated: ,
       },
       keyBroadcast: {
-        address: '0xDd9Ea21f682a6484ac40D36c97Fa056Fbce9004f',
+        address: "0xDd9Ea21f682a6484ac40D36c97Fa056Fbce9004f",
         // blockCreated: ,
       },
     },
@@ -64,20 +63,20 @@ export const CHAINS: EnhancedChain[] = [
     blockExplorers: {
       default: {
         ...gnosisChiado.blockExplorers.default,
-        url: 'https://gnosis-chiado.blockscout.com/',
+        url: "https://gnosis-chiado.blockscout.com/",
       },
     },
 
     tokens: [
       nativeXDaiToken,
       {
-        address: '0x19C653Da7c37c66208fbfbE8908A5051B57b4C70',
-        name: 'GnosisBridged',
-        symbol: 'GNO',
+        address: "0x19C653Da7c37c66208fbfbE8908A5051B57b4C70",
+        name: "GnosisBridged",
+        symbol: "GNO",
         decimals: 18,
-        img: '/xdai.png'
+        img: "/xdai.png",
       },
-    ]
+    ],
   },
   // {
   //   ...gnosis,
