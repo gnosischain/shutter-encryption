@@ -68,15 +68,6 @@ export const FormsWrapper = () => {
     [status, signTx, encryptTx, submitTransactionToSequencer]
   );
 
-  // TODO delete
-  const testEncryption = async () => {
-    const tx =
-      "0x02f8748227d80e84b2d05e0084b2d05e0882520894cabf0fe39453388285f78dbf251511a857131c09880de0b6b3a764000080c080a0937ae369ca7a337da478a51c4b8dd6d7a1e8308bf4e9fa02c9c8bd1e4033163ea03caedb7d814df505067dff817eebd5c5b10a4e862cf08605f7690c7311d3c55b";
-    const ecnryptedTx = await encryptTx(tx);
-    console.log("encrypted tx");
-    console.log(ecnryptedTx?.encryptedTx.toUpperCase());
-  };
-
   return (
     <div className="flex flex-col">
       <div className="w-96 p-4">
@@ -99,7 +90,6 @@ export const FormsWrapper = () => {
       </div>
 
       <ProgressInfoCard status={status} submittedTxHash={submittedTxHash} />
-      <button onClick={testEncryption}>test encryption</button>
     </div>
   );
 };

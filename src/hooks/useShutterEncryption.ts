@@ -58,28 +58,29 @@ export const useShutterEncryption = () => {
     async (signedTx: SignTransactionReturnType) => {
       if (!eonKeyBytes) return;
 
-      // TODO delete test data
-      // const randomHex = randomBytes(12);
-      const randomHex = "35dd1a46c48a8aa165359ceb";
+      const randomHex = randomBytes(12);
       const identityPrefixHex = (address +
         randomHex +
         address?.slice(2)) as Hex;
 
-      const sigmHex = (address + randomHex) as Hex;
+      const sigmaHex = (address + randomHex) as Hex;
 
-      const eonKeyBytes1 =
-        "0x8a70247b414a44d0f08ec1d08484e1192fe68f7e08c3f4f1bf6acefa668de84004e3ed5f6dc8b66087b177fcd0a20a6a16430893464a8d69666c6f28c7b4d1da67b2e09a2b64d719b6b61459feb38e7d8bb13da435845b35fb89f7bbe878e2fa";
-
-      console.log({ signedTx, identityPrefixHex, eonKeyBytes1, randomHex });
+      console.log({
+        signedTx,
+        identityPrefixHex,
+        eonKeyBytes,
+        randomHex,
+        sigmaHex,
+      });
 
       const encryptedTx = await encryptData(
         signedTx,
         identityPrefixHex,
-        eonKeyBytes1,
-        sigmHex
+        eonKeyBytes,
+        sigmaHex
       );
 
-      return { identityPrefixHex, encryptedTx };
+      return { identityPrefixHex: sigmaHex, encryptedTx };
     },
     [eonKeyBytes, address]
   );
@@ -96,6 +97,7 @@ export const useShutterEncryption = () => {
         functionName: "submitEncryptedTransaction",
         args: [eon, identityPrefixHex, encryptedTx, 210000],
         value: parseEther("210000", "gwei"),
+        gasPrice: 210000n,
       });
     },
     [chain, eon]
