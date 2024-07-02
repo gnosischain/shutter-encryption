@@ -11,7 +11,9 @@ const { zip } = pkg;
 import { Blst, P1, P2, PT } from "./blst.hpp.ts";
 
 declare global {
-  interface Window { blst: any; }
+  interface Window {
+    blst: any;
+  }
 }
 
 const blsSubgroupOrderBytes = [
@@ -38,6 +40,10 @@ export async function computeIdentityP1(preimage: `0x${string}`): Promise<P1> {
   const preimageBytes = hexToBytes(
     ("0x1" + preimage.slice(2)) as `0x${string}`
   );
+
+  console.log("compute identity", bytesToHex(preimageBytes));
+
+  // "0164336A17003CDCCDE3CEBECFF1CDEC2F9AEEDB7D35DD1A46C48A8AA165359CEB64336A17003CDCCDE3CEBECFF1CDEC2F9AEEDB7D"
 
   const blst = window.blst;
   const identity = new blst.P1().hash_to(
@@ -99,6 +105,11 @@ export function encodeEncryptedMessage(encryptedMessage: any): `0x${string}` {
 //======================================
 function computeR(sigmaHex: string, msgHex: string): bigint {
   const preimage = sigmaHex + msgHex;
+  console.log("computeR");
+  console.log(preimage.toUpperCase());
+  const res = hash3(preimage);
+  console.log("res");
+  console.log(res);
   return hash3(preimage);
 }
 
@@ -116,11 +127,22 @@ async function computeC2(
   eonKey: P2
 ): Promise<any> {
   const blst = window.blst;
+  console.log("r");
+  console.log(r);
+  console.log("identity P1");
+  console.log(bytesToHex(identity.serialize()));
 
   const p: PT = new blst.PT(identity, eonKey);
+  console.log("p");
+  console.log(bytesToHex(p.to_bendian()).toUpperCase()); // ok
+
   const preimage = await GTExp(p, r);
+  console.log("preimage");
+  console.log(bytesToHex(preimage.to_bendian()).toUpperCase());
   const key = hash2(preimage);
+  console.log("key: ", bytesToHex(key));
   const result = xorBlocks(hexToBytes(sigmaHex as `0x${string}`), key);
+  console.log(bytesToHex(result).toUpperCase());
   return result;
 }
 
@@ -149,9 +171,15 @@ function hash2(p: PT): Uint8Array {
 
 function hash3(bytesHex: string): bigint {
   const preimage = hexToBytes(("0x3" + bytesHex) as `0x${string}`);
+  console.log("=== hash3");
+  console.log("preimage", bytesToHex(preimage));
   const hash = keccak256(preimage, "bytes");
+  console.log("hash", bytesToHex(hash));
   const bigIntHash = bytesToBigInt(hash);
+  console.log("bigIntHash", bigIntHash);
+  console.log("blsSubgroupOrder", blsSubgroupOrder);
   const result = bigIntHash % blsSubgroupOrder;
+  console.log("result", result);
   return result;
 }
 
