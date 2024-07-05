@@ -12,7 +12,7 @@ const queryClient = new QueryClient();
 const projectId = config.walletConnectProjectId;
 
 const chains = [gnosisChiado] as const;
-const wagmiConfig = createConfig({
+export const wagmiConfig = createConfig({
   chains,
   transports: {
     [gnosisChiado.id]: http(),

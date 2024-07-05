@@ -1,11 +1,25 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useCreateWalletClient } from "@/hooks/useCreateWalletClient";
+import { getTransactionCount } from "wagmi/actions";
+import { wagmiConfig } from "@/components/Web3ModalProvider";
 
 export const useSignTransaction = () => {
   const client = useCreateWalletClient();
+  const [transactionCount, setTransactionCount] = useState(0)
 
-  return useCallback(
+  useEffect(() => {
+    const fetchTransactionCount = async () => {
+      if (client.account?.address) {
+        const count = await getTransactionCount(wagmiConfig, { address: client.account.address });
+        setTransactionCount(count);
+      }
+    };
+
+    fetchTransactionCount();
+  }, [client]);
+
+  const signTx = useCallback(
     async (request: any) => {
       // const request = await client.prepareTransactionRequest({
       //   account: client.account,
@@ -24,4 +38,6 @@ export const useSignTransaction = () => {
     },
     [client]
   );
+
+  return { signTx, transactionCount };
 };

@@ -17,10 +17,11 @@ const defaultToken = mapTokenToOption(CHAINS[0].tokens[0]);
 interface TransferFormProps {
   submit: (tx: UsePrepareTransactionRequestReturnType) => void,
   status: number,
+  transactionCount: number,
   isSubmitDisabled: boolean,
 }
 
-export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormProps) => {
+export const TransferForm = ({ submit, status, transactionCount, isSubmitDisabled }: TransferFormProps) => {
   const [chain, setChain] = useState(mappedChains[0]);
   const [token, setToken] = useState(defaultToken);
   const [amount, setAmount] = useState(0);
@@ -105,7 +106,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
         onChange={useCallback((e: any) => setTo(e.target.value), [])}
       />
 
-      <SubmitButton isSubmitDisabled={isSubmitDisabled} status={status} submit={onSubmit} />
+      <SubmitButton isSubmitDisabled={isSubmitDisabled} status={status} transactionCount={transactionCount} submit={onSubmit} />
     </div>
   )
 };
