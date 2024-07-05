@@ -24,6 +24,9 @@ createWeb3Modal({
   projectId,
   featuredWalletIds: [BRAWE_WALLET_ID],
   includeWalletIds: [BRAWE_WALLET_ID],
+  themeVariables: {
+    '--w3m-accent': '#DD7143'
+  }
 });
 
 export function Web3ModalProvider({ children }: { children: React.ReactNode }) {
