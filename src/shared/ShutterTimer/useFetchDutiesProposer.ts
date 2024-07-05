@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 
-import config from '@/constants/config';
-
 const BASE_ENDPOINT = 'eth/v1';
 const DUTIES_PROPOSER_ENDPOINT = 'validator/duties/proposer';
 
@@ -11,7 +9,7 @@ export const useFetchDutiesProposer = (gbcUrl: string, epoch: number) => useQuer
   queryKey: [DUTIES_PROPOSER_QUERY_KEY, epoch],
   queryFn: async () => {
     try {
-      const res = await fetch(`${config.proxyServerUrl}/${gbcUrl}/${BASE_ENDPOINT}/${DUTIES_PROPOSER_ENDPOINT}/${epoch}`);
+      const res = await fetch(`${gbcUrl}/${BASE_ENDPOINT}/${DUTIES_PROPOSER_ENDPOINT}/${epoch}`);
       const data = await res.json();
 
       console.log('[service][rpc-gbc] queried duties proposer', { data: data.data });
