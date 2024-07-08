@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Input } from '@nextui-org/react';
 import { usePrepareTransactionRequest, type UsePrepareTransactionRequestReturnType } from 'wagmi';
-import { type Hex, parseEther } from 'viem';
+import { type Hex, parseEther, isAddress } from 'viem';
 
 import { CHAINS, nativeXDaiToken } from '@/constants/chains';
 import { mapChainsToOptions, mapTokensToOptions, mapTokenToOption } from '@/utils/mappers';
@@ -41,14 +41,14 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
   const mappedTokens = useMemo(() => chain && mapTokensToOptions(chain.tokens), [chain]);
 
   const data = useMemo(() => {
-    if (token?.address === nativeXDaiToken.address || !balance) {
+    if (token?.address === nativeXDaiToken.address || !balance || !isAddress(to)) {
       return '0x' as Hex;
     }
 
     return encodeDataForTransfer(to, amount, balance.decimals) as Hex;
   }, [token, balance, to, amount]);
 
-  const result = usePrepareTransactionRequest({
+  const transactionData = usePrepareTransactionRequest({
     data,
     chainId: chain.id,
     to: token?.address === nativeXDaiToken.address ? to : token?.address,
@@ -56,8 +56,8 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
   });
 
   const onSubmit = useCallback(() => {
-    submit(result);
-  }, [submit, result]);
+    submit(transactionData);
+  }, [submit, transactionData]);
 
   return (
     <div>
@@ -105,7 +105,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
         onChange={useCallback((e: any) => setTo(e.target.value), [])}
       />
 
-      <SubmitButton isSubmitDisabled={isSubmitDisabled} status={status} submit={onSubmit} />
+      <SubmitButton isSubmitDisabled={isSubmitDisabled || !transactionData.data} status={status} submit={onSubmit} />
     </div>
   )
 };

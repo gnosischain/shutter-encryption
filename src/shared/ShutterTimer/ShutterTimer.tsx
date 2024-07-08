@@ -39,7 +39,7 @@ export const ShutterTimer = () => {
     });
   }, [dutiesProposer, shutteredValidatorIndexes]);
 
-  console.log({ shutteredValidatorIndexes, dutiesProposer, currentEpoch, match });
+  // console.log({ shutteredValidatorIndexes, dutiesProposer, currentEpoch, match });
 
   useEffect(() => {
     if (!dutiesProposer || !match) return;
