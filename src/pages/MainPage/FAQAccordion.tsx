@@ -2,7 +2,7 @@ import { Accordion, AccordionItem, Image } from '@nextui-org/react';
 
 export const FAQAccordion = () => {
   return (
-    <div className="flex justify-center w-full bg-[#191919]">
+    <div className="flex justify-center w-full bg-[#191919] py-8">
       <div className='md:w-[750px]'>
         <h2 className="text-2xl text-center my-2">FAQ</h2>
 

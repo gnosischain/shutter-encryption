@@ -69,7 +69,7 @@ export const FormsWrapper = () => {
   );
 
   return (
-    <div className="w-full flex justify-center bg-gradient-to-b from-[#3E6957] to-[#191919]">
+    <div className="w-full flex justify-center bg-[#191919] py-8">
       <div className="w-96 p-4">
         <Tabs fullWidth color="primary" className="">
           <Tab className="focus:outline-none" key="transfer" title="Transfer">
