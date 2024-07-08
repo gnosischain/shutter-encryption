@@ -25,7 +25,7 @@ createWeb3Modal({
   featuredWalletIds: [BRAWE_WALLET_ID],
   includeWalletIds: [BRAWE_WALLET_ID],
   themeVariables: {
-    '--w3m-accent': '#DD7143'
+    '--w3m-accent': '#f37e4b'
   }
 });
 

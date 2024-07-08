@@ -7,11 +7,10 @@ import { SubmitButton } from './SubmitButton';
 interface AdvancedFormProps {
   submit: (tx: UsePrepareTransactionRequestReturnType) => void,
   status: number,
-  transactionCount: number,
   isSubmitDisabled: boolean,
 }
 
-export const AdvancedForm = ({ submit, status, transactionCount, isSubmitDisabled }: AdvancedFormProps) => {
+export const AdvancedForm = ({ submit, status, isSubmitDisabled }: AdvancedFormProps) => {
   const onSubmit = useCallback(() => {
     // submit();
   }, [submit]);
@@ -26,7 +25,7 @@ export const AdvancedForm = ({ submit, status, transactionCount, isSubmitDisable
       <SubmitButton
         submit={onSubmit}
         status={status}
-        transactionCount={transactionCount}
+        transactionCount={0} // TODO: add transaction count in advanced form
         isSubmitDisabled={isSubmitDisabled}
       />
     </div>

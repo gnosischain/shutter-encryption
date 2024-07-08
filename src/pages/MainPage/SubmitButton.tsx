@@ -4,7 +4,7 @@ import { Tooltip } from "@nextui-org/tooltip";
 interface SubmitButtonProps {
   submit: () => void,
   status: number,
-  transactionCount: number,
+  transactionCount: number | undefined,
   isSubmitDisabled: boolean,
 }
 
@@ -26,10 +26,10 @@ const getStatusText = (status: number) => {
 export const SubmitButton = ({ submit, status, transactionCount, isSubmitDisabled }: SubmitButtonProps) => {
   return (
     <div>
-      {status === 0 || status === 1 ?
+      {(status === 0 || status === 1) && transactionCount ?
         <Tooltip content="Use this custom nonce when signing your transaction" color='warning'>
           <div className='text-sm'>Required nonce:
-            <p className='inline-flex ml-2 text-[#f37e4b]'>
+            <p className='inline-flex ml-2 text-warning'>
               {transactionCount + 1}
             </p>
           </div>

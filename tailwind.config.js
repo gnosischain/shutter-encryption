@@ -14,10 +14,13 @@ export default {
         light: {
           colors: {
             primary: {
-              DEFAULT: "#3E6956",
+              DEFAULT: "#3E6957",
             },
+            secondary: "#191919",
             foreground: "#ffffff",
-            warning: "#f37e4b",
+            warning: {
+              DEFAULT: "#f37e4b",
+            },
           },
         },
       },

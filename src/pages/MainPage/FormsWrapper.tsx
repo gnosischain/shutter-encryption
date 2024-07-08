@@ -20,7 +20,7 @@ export const FormsWrapper = () => {
   const [status, setStatus] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [submittedTxHash, setSubmittedTxHash] = useState<Hash>();
 
-  const {signTx, transactionCount} = useSignTransaction();
+  const {signTx} = useSignTransaction();
   const {
     encryptTx,
     submitTransactionToSequencer,
@@ -69,7 +69,7 @@ export const FormsWrapper = () => {
   );
 
   return (
-    <div className="w-full flex justify-center bg-[#191919] py-8">
+    <div className="w-full flex justify-center bg-secondary py-8">
       <div className="w-96 p-4">
         <Tabs fullWidth color="primary" className="">
           <Tab className="focus:outline-none" key="transfer" title="Transfer">
@@ -77,7 +77,6 @@ export const FormsWrapper = () => {
               isSubmitDisabled={isEncryptionParamsLoading}
               submit={submit}
               status={status}
-              transactionCount={transactionCount}
             />
           </Tab>
           <Tab className="focus:outline-none" key="advanced" title="Advanced">
@@ -85,7 +84,6 @@ export const FormsWrapper = () => {
               isSubmitDisabled={isEncryptionParamsLoading}
               submit={submit}
               status={status}
-              transactionCount={transactionCount}
             />
           </Tab>
         </Tabs>
