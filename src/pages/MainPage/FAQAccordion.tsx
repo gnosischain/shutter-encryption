@@ -1,12 +1,16 @@
 import { Accordion, AccordionItem, Image } from '@nextui-org/react';
 
 export const FAQAccordion = () => {
+  const itemClasses = {
+    trigger: "border-b-white rounded-none hover:border-white"
+  };
+
   return (
-    <div className="flex justify-center w-full bg-[#191919] py-8">
+    <div className="flex justify-center w-full py-8">
       <div className='md:w-[750px]'>
         <h2 className="text-2xl text-center my-2">FAQ</h2>
 
-        <Accordion selectionMode="multiple">
+        <Accordion selectionMode="multiple" itemClasses={itemClasses}>
           <AccordionItem key="1" aria-label="what" title="What is the Opt-in Shutterized Gnosis Chain?">
             {`The Opt-in Shutterized Gnosis Chain is a proposal designed to enhance transaction 
           privacy and security on the Gnosis Chain. It allows users to encrypt transactions 
