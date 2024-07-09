@@ -1,10 +1,11 @@
 import { Accordion, AccordionItem, Image } from '@nextui-org/react';
 
-export const FAQAccordion = () => {
-  const itemClasses = {
-    trigger: "border-b-white rounded-none hover:border-white"
-  };
+const itemClasses = {
+  trigger: "border-b-white rounded-none hover:border-white",
+  title: "text-black",
+};
 
+export const FAQAccordion = () => {
   return (
     <div className="flex justify-center w-full py-8">
       <div className='md:w-[750px]'>
