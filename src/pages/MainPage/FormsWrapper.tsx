@@ -9,6 +9,7 @@ import { useShutterEncryption } from "@/hooks/useShutterEncryption";
 import { TransferForm } from "./TransferForm";
 import { AdvancedForm } from "./AdvancedForm";
 import { ProgressInfoCard } from "./ProgressInfoCard";
+import { Whitelist } from "./Whitelist";
 
 // status = 0 -> preparing
 // status = 1 -> signing
@@ -87,6 +88,7 @@ export const FormsWrapper = () => {
             />
           </Tab>
         </Tabs>
+        <Whitelist />
         <ProgressInfoCard status={status} submittedTxHash={submittedTxHash} />
       </div>
     </div>
