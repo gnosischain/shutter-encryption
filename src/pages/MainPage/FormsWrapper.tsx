@@ -9,7 +9,7 @@ import { useShutterEncryption } from "@/hooks/useShutterEncryption";
 import { TransferForm } from "./TransferForm";
 import { AdvancedForm } from "./AdvancedForm";
 import { ProgressInfoCard } from "./ProgressInfoCard";
-import { Whitelist } from "./Whitelist";
+import { WhiteList } from "./Whitelist";
 
 // status = 0 -> preparing
 // status = 1 -> signing
@@ -20,6 +20,8 @@ import { Whitelist } from "./Whitelist";
 export const FormsWrapper = () => {
   const [status, setStatus] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [submittedTxHash, setSubmittedTxHash] = useState<Hash>();
+  const [whitelist, setWhitelist] = useState<Set<string>>(new Set());
+
 
   const {signTx} = useSignTransaction();
   const {
@@ -88,7 +90,7 @@ export const FormsWrapper = () => {
             />
           </Tab>
         </Tabs>
-        <Whitelist />
+        <WhiteList whitelist={whitelist} setWhitelist={setWhitelist} />
         <ProgressInfoCard status={status} submittedTxHash={submittedTxHash} />
       </div>
     </div>
