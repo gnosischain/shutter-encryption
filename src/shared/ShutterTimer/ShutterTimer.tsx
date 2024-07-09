@@ -65,8 +65,8 @@ export const ShutterTimer = () => {
   // console.log(timeDifference);
 
   return (
-    <div className="relative md:h-0 mr-16 text-xs w-full flex justify-end">
-      <Tooltip content={`Next Shutter transactions will be included in ~${timeDifference} seconds`}>
+    <div className="fixed bottom-0 right-4 text-xs w-full flex justify-end">
+      <Tooltip content={`Next Shutter transactions will be included in ~${timeDifference} seconds`} color='warning' placement='left'>
         <CircularProgress
           className="my-4"
           aria-label="Loading..."

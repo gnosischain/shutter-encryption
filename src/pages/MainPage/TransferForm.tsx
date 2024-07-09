@@ -23,7 +23,7 @@ interface TransferFormProps {
 export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormProps) => {
   const [chain, setChain] = useState(mappedChains[0]);
   const [token, setToken] = useState(defaultToken);
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState("0");
   const [to, setTo] = useState('');
 
   const { balance } = useTokenBalance({
@@ -45,7 +45,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
       return '0x' as Hex;
     }
 
-    return encodeDataForTransfer(to, amount, balance.decimals) as Hex;
+    return encodeDataForTransfer(to, Number(amount), balance.decimals) as Hex;
   }, [token, balance, to, amount]);
 
   const result = usePrepareTransactionRequest({
@@ -82,15 +82,16 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
       <div>
         <Input
           type="number"
+          step="0.0001"
           label="Amount"
           variant="bordered"
-          value={String(amount)}
-          onChange={useCallback((e: any) => setAmount(Number(e.target.value)), [])}
+          value={amount}
+          onChange={useCallback((e: any) => setAmount(e.target.value), [])}
         />
 
         <div
           className="text-xs text-default-500 hover:cursor-pointer"
-          onClick={useCallback(() => setAmount(Number(balance?.formatted)), [balance])}
+          onClick={useCallback(() => setAmount(balance?.formatted || "0"), [balance])}
         >
           Balance: {balance ? balance.formatted : '0'}
         </div>
@@ -105,7 +106,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
         onChange={useCallback((e: any) => setTo(e.target.value), [])}
       />
 
-      <SubmitButton isSubmitDisabled={isSubmitDisabled} status={status} submit={onSubmit} />
+      <SubmitButton isSubmitDisabled={isSubmitDisabled || !result.data?.nonce} status={status} transactionCount={result.data?.nonce} submit={onSubmit} />
     </div>
   )
 };

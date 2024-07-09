@@ -25,8 +25,9 @@ export const AdvancedForm = ({ submit, status, isSubmitDisabled }: AdvancedFormP
       <SubmitButton
         submit={onSubmit}
         status={status}
+        transactionCount={0} // TODO: add transaction count in advanced form
         isSubmitDisabled={isSubmitDisabled}
       />
     </div>
-  )
+  );
 };

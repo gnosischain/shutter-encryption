@@ -12,7 +12,7 @@ const queryClient = new QueryClient();
 const projectId = config.walletConnectProjectId;
 
 const chains = [gnosisChiado] as const;
-const wagmiConfig = createConfig({
+export const wagmiConfig = createConfig({
   chains,
   transports: {
     [gnosisChiado.id]: http(),
@@ -24,6 +24,9 @@ createWeb3Modal({
   projectId,
   featuredWalletIds: [BRAWE_WALLET_ID],
   includeWalletIds: [BRAWE_WALLET_ID],
+  themeVariables: {
+    '--w3m-accent': '#f37e4b'
+  }
 });
 
 export function Web3ModalProvider({ children }: { children: React.ReactNode }) {

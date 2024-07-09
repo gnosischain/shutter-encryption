@@ -20,7 +20,7 @@ export const FormsWrapper = () => {
   const [status, setStatus] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [submittedTxHash, setSubmittedTxHash] = useState<Hash>();
 
-  const signTx = useSignTransaction();
+  const {signTx} = useSignTransaction();
   const {
     encryptTx,
     submitTransactionToSequencer,
@@ -69,7 +69,7 @@ export const FormsWrapper = () => {
   );
 
   return (
-    <div className="flex flex-col">
+    <div className="w-full flex justify-center py-8">
       <div className="w-96 p-4">
         <Tabs fullWidth color="primary" className="">
           <Tab className="focus:outline-none" key="transfer" title="Transfer">
@@ -87,9 +87,8 @@ export const FormsWrapper = () => {
             />
           </Tab>
         </Tabs>
+        <ProgressInfoCard status={status} submittedTxHash={submittedTxHash} />
       </div>
-
-      <ProgressInfoCard status={status} submittedTxHash={submittedTxHash} />
     </div>
   );
 };

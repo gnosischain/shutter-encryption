@@ -1,8 +1,10 @@
 import { Button } from '@nextui-org/react';
+import { Tooltip } from "@nextui-org/tooltip";
 
 interface SubmitButtonProps {
   submit: () => void,
   status: number,
+  transactionCount: number | undefined,
   isSubmitDisabled: boolean,
 }
 
@@ -19,12 +21,23 @@ const getStatusText = (status: number) => {
     default:
       return 'New Transaction';
   }
-}
+};
 
-export const SubmitButton = ({ submit, status, isSubmitDisabled }: SubmitButtonProps) => {
+export const SubmitButton = ({ submit, status, transactionCount, isSubmitDisabled }: SubmitButtonProps) => {
   return (
-    <Button isLoading={status !== 0 && status !== 4} onClick={submit} color="primary" className="w-full mt-4 focus:outline-none" isDisabled={isSubmitDisabled}>
-      {getStatusText(status)}
-    </Button>
-  )
-}
+    <div>
+      {(status === 0 || status === 1) && transactionCount ?
+        <Tooltip content="Use this custom nonce when signing your transaction" color='warning'>
+          <div className='text-sm'>Required nonce:
+            <p className='inline-flex ml-2 text-warning'>
+              {transactionCount + 1}
+            </p>
+          </div>
+        </Tooltip>
+        : ""}
+      <Button isLoading={status !== 0 && status !== 4} onClick={submit} color="primary" className="w-full mt-4 focus:outline-none" isDisabled={isSubmitDisabled}>
+        {getStatusText(status)}
+      </Button>
+    </div>
+  );
+};
