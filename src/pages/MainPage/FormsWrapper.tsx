@@ -69,7 +69,7 @@ export const FormsWrapper = () => {
   );
 
   return (
-    <div className="flex flex-col">
+    <div className="w-full flex justify-center py-8">
       <div className="w-96 p-4">
         <Tabs fullWidth color="primary" className="">
           <Tab className="focus:outline-none" key="transfer" title="Transfer">
@@ -87,9 +87,8 @@ export const FormsWrapper = () => {
             />
           </Tab>
         </Tabs>
+        <ProgressInfoCard status={status} submittedTxHash={submittedTxHash} />
       </div>
-
-      <ProgressInfoCard status={status} submittedTxHash={submittedTxHash} />
     </div>
   );
 };

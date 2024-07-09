@@ -4,11 +4,11 @@ import { Connect } from '@/components/Connect';
 
 export const Header = () => {
   return (
-    <div className="h-12 items-center bg-background w-full flex justify-between p-2">
-      <div className="flex items-center text-2xl">
-        <Image className="w-12" src="/gnosis.png" /> Shutter
+    <div className="w-full sticky top-0 z-20 flex justify-between items-center p-3 bg-primary">
+      <div className="flex gap-x-2 items-center text-2xl">
+        <Image src="/gnosis.svg" alt="Gnosis" width={40} height={40} /> Gnosis Shutter
       </div>
       <Connect />
     </div>
-  )
-}
+  );
+};

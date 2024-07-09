@@ -6,14 +6,14 @@ export const useSignTransaction = () => {
   const client = useCreateWalletClient();
 
   return useCallback(async (request: any) => {
-    if (!client) return;
+      if (!client) return;
 
-    console.log({ request });
+      console.log({ request });
 
-    const signature = await client.signTransaction(request);
+      const serializedTransaction = await client.signTransaction(request);
 
-    console.log({ signature });
+      console.log('serialized transaction', { serializedTransaction });
 
-    return signature;
-  }, [client]);
-}
+      return serializedTransaction;
+    }, [client]);
+};

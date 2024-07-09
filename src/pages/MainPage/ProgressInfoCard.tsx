@@ -22,18 +22,18 @@ export const ProgressInfoCard = ({ status, submittedTxHash = '' }: ProgressInfoC
   return (
     <Card className="m-4 h-60">
       <CardBody>
-        <p className="text-sm text-default-500 m-2">
+        <div className="text-sm text-default-500 m-2">
           {status === 0 ? (<span className="flex gap-3">Preparing transaction...</span>) : status > 0 && 'Transaction prepared.'}
-        </p>
-        <p className="text-sm text-default-500 m-2">
+        </div>
+        <div className="text-sm text-default-500 m-2">
           {status === 1 ? (<span className="flex gap-3"><Spinner size="sm" /> Signing transaction...</span>) : status > 1 && 'Transaction signed.'}
-        </p>
-        <p className="text-sm text-default-500 m-2">
+        </div>
+        <div className="text-sm text-default-500 m-2">
           {status === 2 ? (<span className="flex gap-3"><Spinner size="sm" /> Encrypting transaction...</span>) : status > 2 && 'Transaction encrypted.'}
-        </p>
-        <p className="text-sm text-default-500 m-2">
+        </div>
+        <div className="text-sm text-default-500 m-2">
           {status === 3 ? (<span className="flex gap-3"><Spinner size="sm" /> Submitting transaction...</span>) : status > 3 && 'Transaction submitted.'}
-        </p>
+        </div>
 
         {status >= 4 && (<Divider />)}
 
