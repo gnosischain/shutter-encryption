@@ -106,7 +106,12 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
         onChange={useCallback((e: any) => setTo(e.target.value), [])}
       />
 
-      <SubmitButton isSubmitDisabled={isSubmitDisabled || !transactionData.data} status={status} submit={onSubmit} />
+      <SubmitButton
+        isSubmitDisabled={isSubmitDisabled || !transactionData.data}
+        status={status}
+        submit={onSubmit}
+        transactionCount={transactionData?.data?.nonce}
+      />
     </div>
   )
 };

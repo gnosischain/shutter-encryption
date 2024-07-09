@@ -59,6 +59,12 @@ export const AdvancedForm = ({ submit, status, isSubmitDisabled }: AdvancedFormP
         >
           Prefill Example
         </div>
+        <div
+          className="text-xs text-default-500 hover:cursor-pointer"
+          onClick={useCallback(() => setTransactionData(exampleTransaction2), [])}
+        >
+          Prefill Example2
+        </div>
       </div>
 
       <SubmitButton

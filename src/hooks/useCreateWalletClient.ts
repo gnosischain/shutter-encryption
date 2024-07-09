@@ -6,6 +6,7 @@ export const useCreateWalletClient = () => {
   const { address, chain } = useAccount();
 
   return useMemo(() => {
+    // @ts-expect-error - avoid error if window.ethereum is not defined
     return window.ethereum ? createWalletClient({
       account: address,
       chain,

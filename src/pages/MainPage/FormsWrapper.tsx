@@ -46,6 +46,7 @@ export const FormsWrapper = () => {
           ...tx.data,
           nonce: tx.data.nonce + 1,
         });
+        if (!signedTx) return;
         console.log({ signedTx });
         setStatus(2);
 
