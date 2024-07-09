@@ -13,11 +13,11 @@ const SLOTS_PER_EPOCH = 16;
 
 const getEpoch = (genesisTime: number) => {
   return Math.floor(((Date.now() / 1000) - genesisTime) / SLOT_TIME / SLOTS_PER_EPOCH);
-}
+};
 
 const getSlot = (genesisTime: number) => {
   return Math.floor(((Date.now() / 1000) - genesisTime) / SLOT_TIME);
-}
+};
 
 export const ShutterTimer = () => {
   const chainId = useChainId();
@@ -34,7 +34,7 @@ export const ShutterTimer = () => {
     if (!shutteredValidatorIndexes || !dutiesProposer) return;
 
     // todo: gets first one, could be case when current slot is later than the first one
-    return dutiesProposer?.find((duty: any) => {
+    return dutiesProposer?.find((duty) => {
       return shutteredValidatorIndexes.has(Number(duty.validator_index));
     });
   }, [dutiesProposer, shutteredValidatorIndexes]);
@@ -77,5 +77,5 @@ export const ShutterTimer = () => {
         />
       </Tooltip>
     </div>
-  )
+  );
 };
