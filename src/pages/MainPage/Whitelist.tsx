@@ -1,3 +1,4 @@
+import { useShutterValidators } from "@/shared/ShutterTimer/useShutterValidators";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { useCallback, useState } from "react";
 
@@ -10,25 +11,32 @@ const whiteList: Whitelist = {
     Gateway: [18, 34],
 };
 
-interface WhiteListProps {
-    whitelist: Set<string>;
-    setWhitelist: (whitelistUpdater: (prev: Set<string>) => Set<string>) => void;
-  }
-
-export const WhiteList = ({ whitelist, setWhitelist }: WhiteListProps) => {
+export const WhiteList = () => {
     const [isWhitelistOpen, setIsWhitelistOpen] = useState(false);
+    const [tags, setTags] = useState<Set<string>>(new Set());
+    const { setWhitelist } = useShutterValidators();
 
     const handleClick = useCallback((tag: string) => {
-        setWhitelist((prevWhitelist:  Set<string>) => {
-            const newWhitelist = new Set(prevWhitelist);
-            if (newWhitelist.has(tag)) {
-                newWhitelist.delete(tag);
+        setTags((prevTags: Set<string>) => {
+            const newTags = new Set(prevTags);
+            if (newTags.has(tag)) {
+                newTags.delete(tag);
+                setWhitelist((prevWhitelist) => {
+                    const newWhitelist = new Set(prevWhitelist);
+                    whiteList[tag].forEach(id => newWhitelist.delete(id));
+                    return newWhitelist;
+                });
             } else {
-                newWhitelist.add(tag);
+                newTags.add(tag);
+                setWhitelist((prevWhitelist) => {
+                    const newWhitelist = new Set(prevWhitelist);
+                    whiteList[tag].forEach(id => newWhitelist.add(id));
+                    return newWhitelist;
+                });
             }
-            return newWhitelist;
+            return newTags;
         });
-    }, []);
+    }, [setWhitelist]);
 
     return (
         <div className="w-full flex flex-col my-4">
@@ -37,8 +45,8 @@ export const WhiteList = ({ whitelist, setWhitelist }: WhiteListProps) => {
                 {Object.keys(whiteList).map((tag) => (
                     <p id={tag}
                         key={tag}
-                        className={`px-6 py-1 flex text-xs items-center hover:cursor-pointer border border-white rounded-full ${whitelist.has(tag.toLowerCase()) ? "bg-white text-primary" : ""}`}
-                        onClick={() => handleClick(tag.toLowerCase())}
+                        className={`px-6 py-1 flex text-xs items-center hover:cursor-pointer border border-white rounded-full ${tags.has(tag) ? "bg-white text-primary" : ""}`}
+                        onClick={() => handleClick(tag)}
                     >
                         {tag}
                     </p>

@@ -10,6 +10,7 @@ import { TransferForm } from "./TransferForm";
 import { AdvancedForm } from "./AdvancedForm";
 import { ProgressInfoCard } from "./ProgressInfoCard";
 import { WhiteList } from "./Whitelist";
+import { useShutterValidators } from "@/shared/ShutterTimer/useShutterValidators";
 
 // status = 0 -> preparing
 // status = 1 -> signing
@@ -20,7 +21,7 @@ import { WhiteList } from "./Whitelist";
 export const FormsWrapper = () => {
   const [status, setStatus] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [submittedTxHash, setSubmittedTxHash] = useState<Hash>();
-  const [whitelist, setWhitelist] = useState<Set<string>>(new Set());
+  const { filteredValidatorIndexes, timeDifference } = useShutterValidators();
 
 
   const {signTx} = useSignTransaction();
@@ -90,7 +91,7 @@ export const FormsWrapper = () => {
             />
           </Tab>
         </Tabs>
-        <WhiteList whitelist={whitelist} setWhitelist={setWhitelist} />
+        <WhiteList />
         <ProgressInfoCard status={status} submittedTxHash={submittedTxHash} />
       </div>
     </div>

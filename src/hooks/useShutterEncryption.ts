@@ -86,19 +86,21 @@ export const useShutterEncryption = () => {
   );
 
   const submitTransactionToSequencer = useCallback(
-    async (encryptionParams?: { identityPrefixHex: Hex; encryptedTx: Hex }) => {
+    async (delayMs: number, encryptionParams?: { identityPrefixHex: Hex; encryptedTx: Hex }) => {
       if (!encryptionParams) return;
 
       const { identityPrefixHex, encryptedTx } = encryptionParams;
 
-      return await writeContractAsync({
-        address: chain.contracts.sequencer.address,
-        abi: sequencerABI,
-        functionName: "submitEncryptedTransaction",
-        args: [eon, identityPrefixHex, encryptedTx, 210000],
-        value: parseEther("210000", "gwei"),
-        gasPrice: 210000n,
-      });
+      return new Promise(resolve => setTimeout(resolve, delayMs)).then(() => 
+        writeContractAsync({
+          address: chain.contracts.sequencer.address,
+          abi: sequencerABI,
+          functionName: "submitEncryptedTransaction",
+          args: [eon, identityPrefixHex, encryptedTx, 210000],
+          value: parseEther("210000", "gwei"),
+          gasPrice: 210000n,
+        })
+      );
     },
     [chain, eon]
   );
