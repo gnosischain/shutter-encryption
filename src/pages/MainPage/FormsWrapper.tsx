@@ -9,6 +9,7 @@ import { useShutterEncryption } from "@/hooks/useShutterEncryption";
 import { TransferForm } from "./TransferForm";
 import { AdvancedForm } from "./AdvancedForm";
 import { ProgressInfoCard } from "./ProgressInfoCard";
+import { base } from "viem/chains";
 
 // status = 0 -> preparing
 // status = 1 -> signing
@@ -71,7 +72,7 @@ export const FormsWrapper = () => {
   return (
     <div className="w-full flex justify-center py-8">
       <div className="w-96 p-4">
-        <Tabs fullWidth color="primary" className="">
+        <Tabs fullWidth color="primary" classNames={{tab: "bg-white"}}>
           <Tab className="focus:outline-none" key="transfer" title="Transfer">
             <TransferForm
               isSubmitDisabled={isEncryptionParamsLoading}
