@@ -1,4 +1,4 @@
-import { gnosisChiado, type Chain } from 'wagmi/chains';
+import { gnosis, gnosisChiado, type Chain } from 'wagmi/chains';
 import { type Address } from 'viem';
 
 type Token = {
@@ -88,15 +88,47 @@ export const CHAINS: EnhancedChain[] = [
       },
     ],
   },
-  // {
-  //   ...gnosis,
-  //   img: '/gnosis.svg',
-  //   gbcUrl: 'https://rpc-gbc.gnosischain.com',
-  //   genesisTime: 1638993340,
-  //   tokens: [
-  //     nativeXDaiToken,
-  //   ]
-  // },
+  {
+    ...gnosis,
+    img: '/gnosis.svg',
+    contracts: {
+      ...gnosis.contracts,
+      sequencer: {
+        address: '0xc5C4b277277A1A8401E0F039dfC49151bA64DC2E',
+        // blockCreated: ,
+      },
+      keyperSetManager: {
+        address: '0x7C2337f9bFce19d8970661DA50dE8DD7d3D34abb',
+      },
+      keyBroadcast: {
+        address: '0x626dB87f9a9aC47070016A50e802dd5974341301',
+      },
+      validatorRegistry: {
+        address: '0xefCC23E71f6bA9B22C4D28F7588141d44496A6D6',
+      }
+    },
+
+    blockExplorers: {
+      default: {
+        ...gnosis.blockExplorers.default,
+        url: 'https://gnosis.blockscout.com/',
+      },
+    },
+
+    gbcUrl: 'https://rpc-gbc.gnosischain.com',
+    genesisTime: 1638993340,
+
+    tokens: [
+      nativeXDaiToken,
+      {
+        address: '0x9C58BAcC331c9aa871AFD802DB6379a98e80CEdb',
+        name: 'GnosisBridged',
+        symbol: 'GNO',
+        decimals: 18,
+        img: '/xdai.png',
+      },
+    ],
+  },
 ];
 
 export const CHAINS_MAP = CHAINS.reduce<ChainMap>((acc, chain) => {
