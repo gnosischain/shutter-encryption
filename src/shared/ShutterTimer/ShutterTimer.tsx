@@ -1,5 +1,5 @@
 import { CircularProgress, Tooltip } from '@nextui-org/react';
-import { useShutterValidators } from './useShutterValidators';
+import { useShutterValidators } from './ShutterValidatorsProvider';
 
 
 export const ShutterTimer = () => {

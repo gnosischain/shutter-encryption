@@ -10,7 +10,7 @@ import { TransferForm } from "./TransferForm";
 import { AdvancedForm } from "./AdvancedForm";
 import { ProgressInfoCard } from "./ProgressInfoCard";
 import { WhiteList } from "./Whitelist";
-import { useShutterValidators } from "@/shared/ShutterTimer/useShutterValidators";
+import { useShutterValidators } from "@/shared/ShutterTimer/ShutterValidatorsProvider";
 
 // status = 0 -> preparing
 // status = 1 -> signing

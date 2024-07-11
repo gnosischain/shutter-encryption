@@ -29,7 +29,7 @@ export const useGetValidatorRegistryLogs = (chainId: number) => useQuery({
 
       const parsedlogs = responseLogs.map((log: any) => contract.interface.parseLog(log));
 
-      console.log('[service][logs] queried logs', { parsedlogs });
+      // console.log('[service][logs] queried logs', { parsedlogs });
 
       return parsedlogs;
     } catch (error) {

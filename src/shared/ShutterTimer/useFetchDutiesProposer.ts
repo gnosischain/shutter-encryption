@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 
 interface ValidatorDuty {
   pubkey: string;
-  slot: number;
-  validator_index: number;
+  slot: string;
+  validator_index: string;
 }
 
 interface DutiesProposerResponse {
@@ -22,7 +22,7 @@ export const useFetchDutiesProposer = (gbcUrl: string, epoch: number) => useQuer
       const res = await fetch(`${gbcUrl}/${BASE_ENDPOINT}/${DUTIES_PROPOSER_ENDPOINT}/${epoch}`);
       const data = await res.json();
 
-      console.log('[service][rpc-gbc] queried duties proposer', { data: data.data });
+      // console.log('[service][rpc-gbc] queried duties proposer', { data: data.data });
 
       return data.data;
     } catch (error) {
