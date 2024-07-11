@@ -7,8 +7,7 @@ interface Whitelist {
 }
 
 const whiteList: Whitelist = {
-    Nethermind: [10, 9, 58],
-    Gateway: [18, 34],
+    Nethermind: [],
 };
 
 export const WhiteList = () => {
@@ -16,6 +15,15 @@ export const WhiteList = () => {
     const [tags, setTags] = useState<Set<string>>(new Set());
     const { setWhitelist } = useShutterValidators();
     const [localWhitelist, setLocalWhitelist] = useState<Set<number>>(new Set());
+
+    useEffect(() => {
+        fetch('/tekuValidatorRegistrationInfo.json')
+            .then(response => response.json())
+            .then(data => {
+                whiteList.Nethermind = Object.keys(data).map(key => parseInt(key, 10));
+            })
+            .catch(error => console.error('Erreur de chargement du fichier JSON', error));
+    }, []);
 
     useEffect(() => {
         setWhitelist(localWhitelist);
