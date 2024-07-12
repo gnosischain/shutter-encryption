@@ -1,8 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Input } from '@nextui-org/react';
-import { usePrepareTransactionRequest, type UsePrepareTransactionRequestReturnType } from 'wagmi';
+import { useChainId, usePrepareTransactionRequest, type UsePrepareTransactionRequestReturnType } from 'wagmi';
 import { type Hex, parseEther } from 'viem';
-import { useSwitchChain } from 'wagmi';
 import { CHAINS, nativeXDaiToken } from '@/constants/chains';
 import { mapChainsToOptions, mapTokensToOptions, mapTokenToOption } from '@/utils/mappers';
 import { Select } from '@/components/Select';
@@ -22,11 +21,11 @@ interface TransferFormProps {
 }
 
 export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormProps) => {
-  const { switchChain } = useSwitchChain();
   const [chain, setChain] = useState(mappedChains[0]);
   const [token, setToken] = useState(defaultToken);
   const [amount, setAmount] = useState("0");
   const [to, setTo] = useState('');
+  const chainId = useChainId();
 
   const { balance } = useTokenBalance({
     tokenAddress: token?.address,
@@ -41,12 +40,11 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
   }, [chain]);
 
   useEffect(() => {
-    if (switchChain && chain) {
-      switchChain(chain.id);
-      console.log(chain.id);
+    const selectedChain = mappedChains.find(c => c.id === chainId);
+    if (selectedChain) {
+      setChain(selectedChain);
     }
-  }, [chain, switchChain]);
-
+  }, [chainId]);
 
   const mappedTokens = useMemo(() => chain && mapTokensToOptions(chain.tokens), [chain]);
 
@@ -65,6 +63,8 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
     value: token?.address === nativeXDaiToken.address ? parseEther(amount.toString()) : 0 as unknown as bigint,
   });
 
+  console.log(result.data);
+
   const onSubmit = useCallback(() => {
     submit(result);
   }, [submit, result]);
@@ -77,6 +77,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
           selectedItem={chain}
           handleChange={setChain}
           title="Chain"
+
         />
       </div>
 
@@ -116,7 +117,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
         onChange={useCallback((e: any) => setTo(e.target.value), [])}
       />
 
-      <SubmitButton isSubmitDisabled={isSubmitDisabled || !result.data?.nonce} status={status} transactionCount={result.data?.nonce} submit={onSubmit} />
+      <SubmitButton isSubmitDisabled={isSubmitDisabled || !result.data} status={status} transactionCount={result.data?.nonce} submit={onSubmit} />
     </div>
   );
 };
