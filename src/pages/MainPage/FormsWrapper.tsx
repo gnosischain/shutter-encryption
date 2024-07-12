@@ -1,5 +1,5 @@
 import { Tabs, Tab } from "@nextui-org/react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { type UsePrepareTransactionRequestReturnType } from "wagmi";
 import { type Hash } from "viem";
 
@@ -21,10 +21,9 @@ import { useShutterValidators } from "@/shared/ShutterTimer/ShutterValidatorsPro
 export const FormsWrapper = () => {
   const [status, setStatus] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [submittedTxHash, setSubmittedTxHash] = useState<Hash>();
-  const { filteredValidatorIndexes, timeDifference } = useShutterValidators();
+  const { filteredValidatorIndexes, lastNonWhitelistValidator } = useShutterValidators();
 
-
-  const {signTx} = useSignTransaction();
+  const { signTx } = useSignTransaction();
   const {
     encryptTx,
     submitTransactionToSequencer,
@@ -58,18 +57,25 @@ export const FormsWrapper = () => {
         console.log({ encryptionParams });
         setStatus(3);
 
-        // submit tx to sequencer
-        const hash = await submitTransactionToSequencer(encryptionParams);
-        console.log({ hash });
-        setStatus(4);
+        // Wait for the correct validator before submitting
+        const interval = setInterval(async () => {
+          if (!filteredValidatorIndexes.has(lastNonWhitelistValidator)) {
+            clearInterval(interval);
 
-        setSubmittedTxHash(hash);
+            // submit tx to sequencer
+            const hash = await submitTransactionToSequencer(encryptionParams);
+            console.log({ hash });
+            setStatus(4);
+
+            setSubmittedTxHash(hash);
+          }
+        }, 1000);
       } catch (err) {
         console.log(err);
         setStatus(0);
       }
     },
-    [status, signTx, encryptTx, submitTransactionToSequencer]
+    [status, signTx, encryptTx, submitTransactionToSequencer, filteredValidatorIndexes, lastNonWhitelistValidator]
   );
 
   return (

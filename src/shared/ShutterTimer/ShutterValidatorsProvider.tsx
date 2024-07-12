@@ -9,10 +9,10 @@ interface ShutterValidatorsContextType {
   setWhitelist: React.Dispatch<React.SetStateAction<Set<number>>>;
   shutteredValidatorIndexes: Set<unknown> | undefined;
   timeDifference: number;
+  lastNonWhitelistValidator: number | null;
 }
 
 const ShutterValidatorsContext = createContext<ShutterValidatorsContextType | null>(null);
-
 
 const SLOT_TIME = 5;
 const SLOTS_PER_EPOCH = 16;
@@ -34,6 +34,7 @@ export const ShutterValidatorsProvider: React.FC<ShutterValidatorsProviderProps>
   const chain = useMemo(() => CHAINS_MAP[chainId], [chainId]);
   const [currentEpoch, setCurrentEpoch] = useState(getEpoch(chain.genesisTime));
   const [timeDifference, setTimeDifference] = useState(0);
+  const [lastNonWhitelistValidator, setLastNonWhitelistValidator] = useState<number | null>(null);
   const shutteredValidatorIndexes = useGetShutterValidatorIndexes(chainId);
   const { data: dutiesProposer } = useFetchDutiesProposer(chain.gbcUrl, currentEpoch);
   const [whitelist, setWhitelist] = useState<Set<number>>(new Set());
@@ -49,7 +50,22 @@ export const ShutterValidatorsProvider: React.FC<ShutterValidatorsProviderProps>
     return dutiesProposer.find((duty) => filteredValidatorIndexes.has(Number(duty.validator_index)));
   }, [dutiesProposer, filteredValidatorIndexes]);
 
-  console.log(filteredValidatorIndexes, match);
+  useEffect(() => {
+    if (!dutiesProposer) return;
+
+    const firstWhitelistedDuty = dutiesProposer.find((duty) => whitelist.has(Number(duty.validator_index)));
+
+    if (firstWhitelistedDuty) {
+      const lastNonWhitelistDuty = dutiesProposer
+        .slice(0, dutiesProposer.indexOf(firstWhitelistedDuty))
+        .reverse()
+        .find((duty) => !whitelist.has(Number(duty.validator_index)));
+
+      if (lastNonWhitelistDuty) {
+        setLastNonWhitelistValidator(Number(lastNonWhitelistDuty.validator_index));
+      }
+    }
+  }, [dutiesProposer, whitelist]);
 
   useEffect(() => {
     if (!dutiesProposer || !match) return;
@@ -73,6 +89,7 @@ export const ShutterValidatorsProvider: React.FC<ShutterValidatorsProviderProps>
     setWhitelist,
     shutteredValidatorIndexes,
     timeDifference,
+    lastNonWhitelistValidator,
   };
 
   return (
