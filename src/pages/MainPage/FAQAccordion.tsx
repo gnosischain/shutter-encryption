@@ -2,7 +2,8 @@ import { Accordion, AccordionItem, Image } from '@nextui-org/react';
 
 export const FAQAccordion = () => {
   const itemClasses = {
-    trigger: "border-b-white rounded-none hover:border-white"
+    trigger: "bg-secondary hover:border-secondary",
+    title: "text-black"
   };
 
   return (

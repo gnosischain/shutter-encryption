@@ -16,9 +16,9 @@ export default {
             primary: {
               DEFAULT: "#3E6957",
             },
-            secondary: "#191919",
+            secondary: "#f0ebde",
             foreground: "#ffffff",
-            warning: {
+            danger: {
               DEFAULT: "#f37e4b",
             },
           },
