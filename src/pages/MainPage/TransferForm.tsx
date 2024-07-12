@@ -2,12 +2,13 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Input } from '@nextui-org/react';
 import { usePrepareTransactionRequest, type UsePrepareTransactionRequestReturnType } from 'wagmi';
 import { type Hex, parseEther } from 'viem';
-
+import { useSwitchChain } from 'wagmi';
 import { CHAINS, nativeXDaiToken } from '@/constants/chains';
 import { mapChainsToOptions, mapTokensToOptions, mapTokenToOption } from '@/utils/mappers';
 import { Select } from '@/components/Select';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { encodeDataForTransfer } from '@/utils/eth';
+
 
 import { SubmitButton } from './SubmitButton';
 
@@ -21,6 +22,7 @@ interface TransferFormProps {
 }
 
 export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormProps) => {
+  const { switchChain } = useSwitchChain();
   const [chain, setChain] = useState(mappedChains[0]);
   const [token, setToken] = useState(defaultToken);
   const [amount, setAmount] = useState("0");
@@ -37,6 +39,14 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
       setToken(mapTokenToOption(chain.tokens[0]));
     }
   }, [chain]);
+
+  useEffect(() => {
+    if (switchChain && chain) {
+      switchChain(chain.id);
+      console.log(chain.id);
+    }
+  }, [chain, switchChain]);
+
 
   const mappedTokens = useMemo(() => chain && mapTokensToOptions(chain.tokens), [chain]);
 
@@ -108,5 +118,5 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
 
       <SubmitButton isSubmitDisabled={isSubmitDisabled || !result.data?.nonce} status={status} transactionCount={result.data?.nonce} submit={onSubmit} />
     </div>
-  )
+  );
 };
