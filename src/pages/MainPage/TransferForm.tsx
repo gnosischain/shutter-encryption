@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Input } from '@nextui-org/react';
-import { usePrepareTransactionRequest, type UsePrepareTransactionRequestReturnType } from 'wagmi';
+import { useChainId, usePrepareTransactionRequest, useSwitchChain, type UsePrepareTransactionRequestReturnType } from 'wagmi';
 import { type Hex, parseEther, isAddress } from 'viem';
 
 import { CHAINS, nativeXDaiToken } from '@/constants/chains';
@@ -8,6 +8,7 @@ import { mapChainsToOptions, mapTokensToOptions, mapTokenToOption } from '@/util
 import { Select } from '@/components/Select';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { encodeDataForTransfer } from '@/utils/eth';
+
 
 import { SubmitButton } from './SubmitButton';
 
@@ -25,6 +26,8 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
   const [token, setToken] = useState(defaultToken);
   const [amount, setAmount] = useState("0");
   const [to, setTo] = useState('');
+  const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
 
   const { balance } = useTokenBalance({
     tokenAddress: token?.address,
@@ -35,8 +38,16 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
   useEffect(() => {
     if (chain && chain.tokens.length > 0) {
       setToken(mapTokenToOption(chain.tokens[0]));
+      switchChain({ chainId: chain.id });
     }
   }, [chain]);
+
+  useEffect(() => {
+    const selectedChain = mappedChains.find(c => c.id === chainId);
+    if (selectedChain) {
+      setChain(selectedChain);
+    }
+  }, [chainId]);
 
   const mappedTokens = useMemo(() => chain && mapTokensToOptions(chain.tokens), [chain]);
 
@@ -55,6 +66,8 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
     value: token?.address === nativeXDaiToken.address ? parseEther(amount.toString()) : 0 as unknown as bigint,
   });
 
+  console.log(transactionData.data);
+
   const onSubmit = useCallback(() => {
     submit(transactionData);
   }, [submit, transactionData]);
@@ -67,6 +80,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
           selectedItem={chain}
           handleChange={setChain}
           title="Chain"
+
         />
       </div>
 
@@ -113,5 +127,5 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
         transactionCount={transactionData?.data?.nonce}
       />
     </div>
-  )
+  );
 };

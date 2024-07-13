@@ -6,7 +6,7 @@ type Item = any & {
   label: string;
   value: string | number;
   avatar?: string;
-}
+};
 
 interface SelectProps {
   items: Item[];
@@ -64,27 +64,28 @@ export const Select = ({ items, handleChange, selectedItem, title }: SelectProps
       renderValue={(items) => {
         return items.map((item) => {
           return (
-          <div key={item.key} className="flex items-center gap-2">
-            {item.data.avatar && (
-              <Avatar
-                alt={item.data.label}
-                className="flex-shrink-0"
-                size="sm"
-                src={item.data.avatar}
-              />
-            )}
-            <div className="flex flex-col">
-              <span>{item.data.label}</span>
-              <span className="text-default-500 text-tiny">({item.data.value})</span>
+            <div key={item.key} className="flex items-center gap-2">
+              {item.data.avatar && (
+                <Avatar
+                  alt={item.data.label}
+                  className="flex-shrink-0"
+                  size="sm"
+                  src={item.data.avatar}
+                />
+              )}
+              <div className="flex flex-col">
+                <span>{item.data.label}</span>
+                <span className="text-default-500 text-tiny">({item.data.value})</span>
+              </div>
             </div>
-          </div>
-        )});
+          );
+        });
       }}
     >
       {(item) => (
         <SelectItem key={item.key} textValue={item.label}>
           <div className="flex gap-2 items-center">
-            <Avatar alt={item.label} className="flex-shrink-0" size="sm" src={item.avatar}/>
+            <Avatar alt={item.label} className="flex-shrink-0" size="sm" src={item.avatar} />
             <div className="flex flex-col">
               <span className="text-small">{item.label}</span>
               <span className="text-tiny text-default-400">{item.value}</span>
@@ -94,4 +95,4 @@ export const Select = ({ items, handleChange, selectedItem, title }: SelectProps
       )}
     </NextUISelect>
   );
-}
+};

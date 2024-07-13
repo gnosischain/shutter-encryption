@@ -66,7 +66,7 @@ export const ShutterTimer = () => {
 
   return (
     <div className="fixed bottom-0 right-4 text-xs w-full flex justify-end">
-      <Tooltip content={`Next Shutter transactions will be included in ~${timeDifference} seconds`} color='warning' placement='left'>
+      <Tooltip content={`Next Shutter transactions will be included in ~${timeDifference} seconds`} color='danger' placement='left'>
         <CircularProgress
           className="my-4"
           aria-label="Loading..."

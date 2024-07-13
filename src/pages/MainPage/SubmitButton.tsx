@@ -26,8 +26,8 @@ const getStatusText = (status: number) => {
 export const SubmitButton = ({ submit, status, transactionCount, isSubmitDisabled }: SubmitButtonProps) => {
   return (
     <div>
-      {(status === 0 || status === 1) && transactionCount ?
-        <Tooltip content="Use this custom nonce when signing your transaction" color='warning'>
+      {(status === 0 || status === 1) && transactionCount !== undefined ?
+        <Tooltip content="Use this custom nonce when signing your transaction" color='danger'>
           <div className='text-sm'>Required nonce:
             <p className='inline-flex ml-2 text-warning'>
               {transactionCount + 1}

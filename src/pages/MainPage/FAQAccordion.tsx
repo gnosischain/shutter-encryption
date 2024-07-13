@@ -1,7 +1,7 @@
 import { Accordion, AccordionItem, Image } from '@nextui-org/react';
 
 const itemClasses = {
-  trigger: "border-b-white rounded-none hover:border-white",
+  trigger: "bg-secondary hover:border-secondary",
   title: "text-black",
 };
 
