@@ -9,7 +9,6 @@ import { useShutterEncryption } from "@/hooks/useShutterEncryption";
 import { TransferForm } from "./TransferForm";
 import { AdvancedForm } from "./AdvancedForm";
 import { ProgressInfoCard } from "./ProgressInfoCard";
-import { base } from "viem/chains";
 
 // status = 0 -> preparing
 // status = 1 -> signing

@@ -59,7 +59,7 @@ export const AdvancedForm = ({ submit, status, isSubmitDisabled }: AdvancedFormP
   const onSubmit = useCallback(() => {
     if (!isValidTxData(formattedTxData)) return;
 
-    submit(formattedTxData);
+    // submit(formattedTxData);
   }, [submit, formattedTxData]);
 
   return (
