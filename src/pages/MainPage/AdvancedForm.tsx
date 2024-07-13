@@ -1,5 +1,5 @@
 import { Textarea } from '@nextui-org/input';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import type { UsePrepareTransactionRequestReturnType } from 'wagmi';
 
 import { SubmitButton } from './SubmitButton';
@@ -25,7 +25,7 @@ const exampleTransaction = `{
 }`
 
 const exampleTransaction2 = `{
-  "chainId": 1,
+  "chainId": 10200,
   "from": "0x654dff41d51c230fa400205a633101c5c1f1969c",
   "to": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
   "value": "0x2386f26fc10000",
@@ -36,12 +36,31 @@ const exampleTransaction2 = `{
   "nonce": "0x48"
 }`;
 
+const formatTransactionData = (data: string) => {
+  try {
+    console.log({ data });
+    return JSON.stringify(JSON.parse(data), null, 2);
+  } catch (e) {
+    return null;
+  }
+}
+
+const isValidTxData = (txData: any) => {
+  return txData && txData.chainId && txData.from && txData.to && txData.data && txData.nonce && txData.gas && txData.maxFeePerGas && txData.maxPriorityFeePerGas;
+}
+
 export const AdvancedForm = ({ submit, status, isSubmitDisabled }: AdvancedFormProps) => {
-  const [transactionData, setTransactionData] = useState<string>();
+  const [transactionData, setTransactionData] = useState<string>('');
+
+  const formattedTxData = useMemo(() => formatTransactionData(transactionData), [transactionData]);
+
+  console.log({ formattedTxData });
 
   const onSubmit = useCallback(() => {
-    // submit();
-  }, [submit]);
+    if (!isValidTxData(formattedTxData)) return;
+
+    submit(formattedTxData);
+  }, [submit, formattedTxData]);
 
   return (
     <div>
@@ -71,7 +90,7 @@ export const AdvancedForm = ({ submit, status, isSubmitDisabled }: AdvancedFormP
         submit={onSubmit}
         status={status}
         transactionCount={0} // TODO: add transaction count in advanced form
-        isSubmitDisabled={isSubmitDisabled}
+        isSubmitDisabled={isSubmitDisabled || !isValidTxData(formattedTxData)}
       />
     </div>
   );
