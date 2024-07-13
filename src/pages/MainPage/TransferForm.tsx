@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Input } from '@nextui-org/react';
-import { useChainId, usePrepareTransactionRequest, type UsePrepareTransactionRequestReturnType } from 'wagmi';
+import { useChainId, usePrepareTransactionRequest, useSwitchChain, type UsePrepareTransactionRequestReturnType } from 'wagmi';
 import { type Hex, parseEther } from 'viem';
 import { CHAINS, nativeXDaiToken } from '@/constants/chains';
 import { mapChainsToOptions, mapTokensToOptions, mapTokenToOption } from '@/utils/mappers';
@@ -26,6 +26,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
   const [amount, setAmount] = useState("0");
   const [to, setTo] = useState('');
   const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
 
   const { balance } = useTokenBalance({
     tokenAddress: token?.address,
@@ -36,6 +37,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
   useEffect(() => {
     if (chain && chain.tokens.length > 0) {
       setToken(mapTokenToOption(chain.tokens[0]));
+      switchChain({ chainId: chain.id });
     }
   }, [chain]);
 

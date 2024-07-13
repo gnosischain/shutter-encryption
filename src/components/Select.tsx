@@ -33,7 +33,7 @@ export const Select = ({ items, handleChange, selectedItem, title }: SelectProps
       selectedKeys={selectedKeys}
       onChange={handleSelectionChange}
       label={title}
-      isDisabled={title == "Chain"}
+      isDisabled={!handleChange}
       classNames={{
         label: 'group-data-[filled=true]:-translate-y-4 text-lg',
         trigger: 'min-h-16 focus:outline-none border-none',
