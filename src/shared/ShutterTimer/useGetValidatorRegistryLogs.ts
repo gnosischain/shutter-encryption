@@ -14,12 +14,23 @@ export const useGetValidatorRegistryLogs = (chainId: number) => useQuery({
       const rpc = chain.rpcUrls.default.http[0];
       const provider = new providers.JsonRpcProvider(rpc);
 
+      const localStorageLogsKey = [LOGS_QUERY_KEY, chainId].join('_');
+      const cachedString = localStorage.getItem(localStorageLogsKey);
+      const cachedLogs = cachedString ? JSON.parse(cachedString) : { blockNumber: null, logs: [] };
+
       const responseLogs = await provider.getLogs({
         address: chain.contracts.validatorRegistry.address,
         topics: [],
-        fromBlock: 'earliest',
+        fromBlock: Number(cachedLogs.blockNumber) ?? 'earliest',
         toBlock: 'latest'
       });
+      const allLogs = [...cachedLogs.logs, ...responseLogs];
+      const blockNumber = responseLogs.length > 0 ? responseLogs[responseLogs.length - 1].blockNumber + 1 : cachedLogs.blockNumber;
+
+      localStorage.setItem(localStorageLogsKey, JSON.stringify({
+        blockNumber: blockNumber,
+        logs: allLogs,
+      }));
 
       const contract = new Contract(
         chain.contracts.validatorRegistry.address,
@@ -27,7 +38,7 @@ export const useGetValidatorRegistryLogs = (chainId: number) => useQuery({
         provider
       );
 
-      const parsedlogs = responseLogs.map((log: any) => contract.interface.parseLog(log));
+      const parsedlogs = allLogs.map((log: any) => contract.interface.parseLog(log));
 
       console.log('[service][logs] queried logs', { parsedlogs });
 

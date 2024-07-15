@@ -20,14 +20,21 @@ function extractValidatorIndex(messageHex: string) {
   return BigNumber.from(validatorIndexBytes).toNumber();
 }
 
+function extractSubscriptionStatus(messageHex: string) {
+  return messageHex[messageHex.length - 1] === '1';
+}
+
 export const useGetShutterValidatorIndexes = (chainId: number) => {
   const { data: logs } = useGetValidatorRegistryLogs(chainId);
 
   return useMemo(() => {
     return logs?.reduce((acc, log) => {
       const validatorIndex = extractValidatorIndex(log.args.message);
+      const subscriptionStatus = extractSubscriptionStatus(log.args.message);
 
-      acc.add(validatorIndex);
+      if (subscriptionStatus) {
+        acc.add(validatorIndex);
+      }
 
       return acc;
     }, new Set());
