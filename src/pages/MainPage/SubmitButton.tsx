@@ -13,11 +13,15 @@ const getStatusText = (status: number) => {
     case 0:
       return 'Sign Transaction';
     case 1:
-      return 'Signing Transaction';
+      return 'Signing Transaction...';
     case 2:
-      return 'Encrypting Transaction';
+      return 'Encrypt Transaction';
     case 3:
-      return 'Submitting Transaction';
+      return 'Encrypting Transaction...';
+    case 4:
+      return 'Submit Transaction';
+    case 5:
+      return 'Submitting Transaction...';
     default:
       return 'New Transaction';
   }
@@ -35,7 +39,7 @@ export const SubmitButton = ({ submit, status, transactionCount, isSubmitDisable
           </div>
         </Tooltip>
         : ""}
-      <Button isLoading={status !== 0 && status !== 4} onClick={submit} color="primary" className="w-full mt-4 focus:outline-none" isDisabled={isSubmitDisabled}>
+      <Button isLoading={status === 1 || status === 3 || status === 5} onClick={submit} color="primary" className="w-full mt-4 focus:outline-none" isDisabled={isSubmitDisabled}>
         {getStatusText(status)}
       </Button>
     </div>

@@ -16,7 +16,7 @@ const mappedChains = mapChainsToOptions(CHAINS);
 const defaultToken = mapTokenToOption(CHAINS[0].tokens[0]);
 
 interface TransferFormProps {
-  submit: (tx: UsePrepareTransactionRequestReturnType) => void,
+  submit: (tx: UsePrepareTransactionRequestReturnType, step: number) => void,
   status: number,
   isSubmitDisabled: boolean,
 }
@@ -69,7 +69,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
   console.log(transactionData.data);
 
   const onSubmit = useCallback(() => {
-    submit(transactionData);
+    submit(transactionData, 0);
   }, [submit, transactionData]);
 
   return (
