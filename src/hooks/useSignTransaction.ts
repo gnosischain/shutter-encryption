@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 
 import { useCreateWalletClient } from "@/hooks/useCreateWalletClient";
-import { getTransactionCount } from "wagmi/actions";
-import { wagmiConfig } from "@/components/Web3ModalProvider";
 
 export const useSignTransaction = () => {
   const client = useCreateWalletClient();
