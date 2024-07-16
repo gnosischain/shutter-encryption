@@ -34,6 +34,8 @@ export const useGetShutterValidatorIndexes = (chainId: number) => {
 
       if (subscriptionStatus) {
         acc.add(validatorIndex);
+      } else {
+        acc.delete(validatorIndex);
       }
 
       return acc;
