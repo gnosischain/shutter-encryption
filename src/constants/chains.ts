@@ -43,18 +43,17 @@ export const nativeXDaiToken: Token = {
   name: "xDai",
   symbol: "xDai",
   decimals: 18,
-  img: "/gnosis.svg",
+  img: "/xdai.png",
 };
 
 export const CHAINS: EnhancedChain[] = [
   {
     ...gnosis,
-    img: "/gnosis.svg",
+    img: "/gnosisGreen.svg",
     contracts: {
       ...gnosis.contracts,
       sequencer: {
         address: "0xc5C4b277277A1A8401E0F039dfC49151bA64DC2E",
-        // blockCreated: ,
       },
       keyperSetManager: {
         address: "0x7C2337f9bFce19d8970661DA50dE8DD7d3D34abb",
@@ -84,13 +83,13 @@ export const CHAINS: EnhancedChain[] = [
         name: "GnosisBridged",
         symbol: "GNO",
         decimals: 18,
-        img: "/xdai.png",
+        img: "/gnosisGreen.svg",
       },
     ],
   },
   {
     ...gnosisChiado,
-    img: "/gnosis.svg",
+    img: "/gnosisGreen.svg",
     contracts: {
       ...gnosisChiado.contracts,
       sequencer: {
@@ -125,7 +124,7 @@ export const CHAINS: EnhancedChain[] = [
         name: "GnosisBridged",
         symbol: "GNO",
         decimals: 18,
-        img: "/xdai.png",
+        img: "/gnosisGreen.svg",
       },
     ],
   },
