@@ -3,6 +3,7 @@ import { providers, Contract } from 'ethers';
 
 import { CHAINS_MAP } from '@/constants/chains';
 import validatorRegistryABI from '@/abis/validatorRegistryABI';
+import { loadCachedRegistryLogs } from './useLoadValidatorRegistryLogs';
 
 // query
 const LOGS_QUERY_KEY = 'logs';
@@ -24,12 +25,17 @@ export const useGetValidatorRegistryLogs = (chainId: number) => useQuery({
       //   fromBlock: Number(cachedLogs.blockNumber) ?? 'earliest',
       //   toBlock: 'latest'
       // });
+      
+      const { messages: existingValidators, lastBlock: fromBlock } = await loadCachedRegistryLogs(chainId, chain.validatorRegistryStartBlockNumber);
+
       const responseLogs = await provider.getLogs({
         address: chain.contracts.validatorRegistry.address,
         topics: [],
-        fromBlock: chain.validatorRegistryStartBlockNumber ?? 'earliest',
+        fromBlock: fromBlock ?? 'earliest',
         toBlock: 'latest'
       });
+
+      // let msgs = responseLogs.map((e) => e.args.pubkey);
       const allLogs = [...cachedLogs.logs, ...responseLogs];
       const blockNumber = responseLogs.length > 0 ? responseLogs[responseLogs.length - 1].blockNumber + 1 : cachedLogs.blockNumber;
 
