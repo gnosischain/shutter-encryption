@@ -18,10 +18,16 @@ export const useGetValidatorRegistryLogs = (chainId: number) => useQuery({
       const cachedString = localStorage.getItem(localStorageLogsKey);
       const cachedLogs = cachedString ? JSON.parse(cachedString) : { blockNumber: null, logs: [] };
 
+      // const responseLogs = await provider.getLogs({
+      //   address: chain.contracts.validatorRegistry.address,
+      //   topics: [],
+      //   fromBlock: Number(cachedLogs.blockNumber) ?? 'earliest',
+      //   toBlock: 'latest'
+      // });
       const responseLogs = await provider.getLogs({
         address: chain.contracts.validatorRegistry.address,
         topics: [],
-        fromBlock: Number(cachedLogs.blockNumber) ?? 'earliest',
+        fromBlock: chain.validatorRegistryStartBlockNumber ?? 'earliest',
         toBlock: 'latest'
       });
       const allLogs = [...cachedLogs.logs, ...responseLogs];
