@@ -20,7 +20,6 @@ const rawTx = `{
   "gas": 42866,
   "maxFeePerGas": 3000000008,
   "maxPriorityFeePerGas": 3000000000,
-  "nonce": 52,
   "to": "0x19C653Da7c37c66208fbfbE8908A5051B57b4C70",
   "type": "eip1559",
   "value": 0
@@ -49,7 +48,6 @@ const isValidTxData = (txData: any, transactionType: string) => {
       typeof txData.chainId === 'number' &&
       typeof txData.to === 'string' &&
       typeof txData.data === 'string' &&
-      typeof txData.nonce === 'number' &&
       typeof txData.gas === 'number' &&
       typeof txData.maxFeePerGas === 'number';
   }
@@ -118,7 +116,7 @@ export const AdvancedForm = ({ submit, status, setStatus, isSubmitDisabled }: Ad
           onChange={useCallback((e: any) => setTransactionData(e.target.value), [])}
         />
         <div
-          className="text-xs text-default-500 hover:cursor-pointer"
+          className="text-xs text-default-500 hover:cursor-pointer mb-8"
           onClick={useCallback(() => setTransactionData(transactionType === "raw" ? rawTx : transactionType === "signed" ? signedTx : encryptedTx), [transactionType])}
         >
           Prefill Example
