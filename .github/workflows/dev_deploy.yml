@@ -40,7 +40,7 @@ jobs:
       - name: Install
         run: |
           rm -rf .cache
-          rm -rf build
+          rm -rf dist
           yarn config set cache-folder .yarn
           yarn install
           pip install awscli --upgrade --user
