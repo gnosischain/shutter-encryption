@@ -1,0 +1,82 @@
+name: Manual Deployment to Production
+
+# Run on pushes to main or PRs
+on:
+    workflow_dispatch:
+        inputs:
+          tag:
+              description: Tagged version to deploy
+              required: true
+              type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VITE_WALLET_CONNECT_PROJECT_ID: ${{ secrets.VITE_WALLET_CONNECT_PROJECT_ID }}
+
+jobs:
+  deploy:
+    name: Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tag checkout
+        run: |
+          git fetch --prune --unshallow --tags
+          git checkout ${{ github.event.inputs.tag }}
+
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20.3.0'
+
+      - name: Install
+        run: |
+          rm -rf .cache
+          rm -rf dist
+          yarn config set cache-folder .yarn
+          yarn install
+          pip install awscli --upgrade --user
+
+      - name: Build App
+        run: yarn build
+
+      - name: Configure AWS Production credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.PROD_AWS_DEFAULT_REGION }}
+
+      # Script to deploy to production environment
+      - name: 'Deploy to S3: Production'
+        run: |
+          aws s3 sync dist/ s3://${{ secrets.PROD_BUCKET_NAME }} --delete --exclude "*.html" --exclude "sitemap.xml" --cache-control max-age=86400,public
+          aws s3 sync dist/ s3://${{ secrets.PROD_BUCKET_NAME }} --delete --exclude "*" --include "*.html" --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html
+          aws s3 sync dist/ s3://${{ secrets.PROD_BUCKET_NAME }} --delete --exclude "*" --include "sitemap.xml" --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/xml
+          
+      - name: 'Cloudfront Production: cache invalidation'
+        if: (startsWith(github.event.ref, 'refs/tags/v') || github.event_name == 'release')
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.PROD_AWS_CLOUDFRONT_ID }} --paths "/*"
+
+  notify:
+    uses: ./.github/workflows/slack_release_notification.yml
+    if: ${{ always() }}
+    needs: deploy
+    secrets: 
+      RELEASES_SLACK_WEBHOOK_URL: ${{ secrets.RELEASES_SLACK_WEBHOOK_URL }}
+    with:
+      environment: Production
+      service: GC Shutter UI
+      success: ${{ contains(join(needs.*.result, ','), 'success') }}
+      message: "deploy service `GC Shutter UI` version `${{ inputs.tag }}`. Triggered by `${{ github.actor }}`."

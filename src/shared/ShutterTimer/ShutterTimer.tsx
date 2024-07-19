@@ -30,39 +30,38 @@ export const ShutterTimer = () => {
 
   const { data: dutiesProposer } = useFetchDutiesProposer(chain.gbcUrl, currentEpoch);
 
-  const match = useMemo(() => {
+  const matches = useMemo(() => {
     if (!shutteredValidatorIndexes || !dutiesProposer) return;
 
-    // todo: gets first one, could be case when current slot is later than the first one
-    return dutiesProposer?.find((duty: any) => {
+    return dutiesProposer?.filter((duty: any) => {
       return shutteredValidatorIndexes.has(Number(duty.validator_index));
     });
   }, [dutiesProposer, shutteredValidatorIndexes]);
 
-  // console.log({ shutteredValidatorIndexes, dutiesProposer, currentEpoch, match });
+  // console.log({ shutteredValidatorIndexes, dutiesProposer, currentEpoch, matches });
 
   useEffect(() => {
-    if (!dutiesProposer || !match) return;
+    if (!dutiesProposer || !matches) return;
 
     const interval = setInterval(() => {
       const currentSlot = getSlot(chain.genesisTime);
+      const match = matches.find((m: any) => m.slot > currentSlot);
+
+      if (!match) {
+        setTimeDifference(0);
+        setCurrentEpoch(getEpoch(chain.genesisTime) + 1);
+        clearInterval(interval);
+        return;
+      }
 
       const timeDifference = (match.slot - currentSlot) * SLOT_TIME;
       setTimeDifference(timeDifference);
 
       // console.log({ match, timeDifference, currentSlot });
-
-      if (currentSlot >= match.slot) {
-        setTimeDifference(0);
-        setCurrentEpoch(getEpoch(chain.genesisTime) + 1);
-        clearInterval(interval);
-      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [dutiesProposer, match, chain]);
-
-  // console.log(timeDifference);
+  }, [dutiesProposer, matches, chain]);
 
   return (
     <div className="fixed bottom-0 right-4 text-xs w-full flex justify-end">

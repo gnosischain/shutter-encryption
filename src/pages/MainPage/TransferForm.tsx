@@ -43,7 +43,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
   }, [chain]);
 
   useEffect(() => {
-    const selectedChain = mappedChains.find((c: any) => c.id === chainId);
+    const selectedChain = mappedChains.find((c: { id: number; }) => c.id === chainId);
     if (selectedChain) {
       setChain(selectedChain);
     }
