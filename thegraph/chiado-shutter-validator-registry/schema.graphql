@@ -1,0 +1,8 @@
+type Updated @entity(immutable: true) {
+  id: Bytes!
+  message: Bytes! # bytes
+  signature: Bytes! # bytes
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

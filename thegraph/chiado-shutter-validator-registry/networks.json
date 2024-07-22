@@ -1,0 +1,8 @@
+{
+  "gnosis-chiado": {
+    "ValidatorRegistry": {
+      "address": "0x06BfddbEbe11f7eE8a39Fc7DC24498dE85C8afca",
+      "startBlock": 9884076
+    }
+  }
+}
