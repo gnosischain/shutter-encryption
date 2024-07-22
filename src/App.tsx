@@ -3,13 +3,11 @@ import { Header } from '@/components/Header';
 
 function App() {
   return (
-    <main className="light text-foreground bg-background">
-      <div>
-        <Header />
-        <MainPage />
-      </div>
-    </main>
-  )
+    <div>
+      <Header/>
+      <MainPage/>
+    </div>
+  );
 }
 
-export default App
+export default App;
