@@ -1,7 +1,9 @@
 type Updated @entity(immutable: true) {
   id: Bytes!
-  message: Bytes! # bytes
-  signature: Bytes! # bytes
+  message: Bytes!
+  signature: Bytes!
+  validatorIndex: BigInt!
+  subscriptionStatus: Boolean!
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

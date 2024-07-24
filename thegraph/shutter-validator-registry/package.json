@@ -5,8 +5,8 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ shutter-validator-registry",
-    "create-local": "graph create --node http://localhost:8020/ chiado-shutter-validator-registry",
-    "remove-local": "graph remove --node http://localhost:8020/ chiado-shutter-validator-registry",
+    "create-local": "graph create --node http://localhost:8020/ shutter-validator-registry",
+    "remove-local": "graph remove --node http://localhost:8020/ shutter-validator-registry",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 shutter-validator-registry",
     "test": "graph test"
   },
