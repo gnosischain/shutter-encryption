@@ -1,7 +1,10 @@
 import { BigNumber, utils } from 'ethers';
 import { useMemo } from 'react';
+import { useLazyQuery, useQuery } from '@apollo/client';
 
 import { useGetValidatorRegistryLogs } from './useGetValidatorRegistryLogs';
+import { GET_UPDATES } from './ValidatorRegistryQL';
+import { useQueryValidatorRegistryLogs } from './useQueryValidatorRegistryLogs';
 
 function extractValidatorIndex(messageHex: string) {
   // Convert hex to bytes
@@ -26,6 +29,13 @@ function extractSubscriptionStatus(messageHex: string) {
 
 export const useGetShutterValidatorIndexes = (chainId: number) => {
   const { data: logs } = useGetValidatorRegistryLogs(chainId);
+
+// todo wip
+  useQueryValidatorRegistryLogs();
+  // const [getUpdates, { loading, data: updates }] = useLazyQuery(GET_UPDATES);
+  // const { data: updates, loading, error } = useQuery(GET_UPDATES);
+
+  // console.log('graph', { logs, updates, loading, error });
 
   return useMemo(() => {
     return logs?.reduce((acc, log) => {
