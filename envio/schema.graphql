@@ -4,3 +4,7 @@ type ValidatorRegistry_Updated {
   signature: String!
 }
 
+type ValidatorIndex {
+  id: ID!
+  active: Boolean!
+}

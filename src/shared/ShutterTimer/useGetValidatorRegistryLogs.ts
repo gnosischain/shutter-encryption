@@ -1,53 +1,79 @@
-import { useQuery } from '@tanstack/react-query';
-import { providers, Contract } from 'ethers';
+import { useQuery } from "@tanstack/react-query";
+import { providers, Contract } from "ethers";
 
-import { CHAINS_MAP } from '@/constants/chains';
-import validatorRegistryABI from '@/abis/validatorRegistryABI';
+import { CHAINS_MAP } from "@/constants/chains";
+import validatorRegistryABI from "@/abis/validatorRegistryABI";
+import { ValidatorIndexEntity, ValidatorRegistryContract } from "../../../envio/generated";
 
 // query
-const LOGS_QUERY_KEY = 'logs';
-export const useGetValidatorRegistryLogs = (chainId: number) => useQuery({
-  queryKey: [LOGS_QUERY_KEY, chainId],
-  queryFn: async () => {
-    try {
-      const chain = CHAINS_MAP[chainId];
-      const rpc = chain.rpcUrls.default.http[0];
-      const provider = new providers.JsonRpcProvider(rpc);
+const LOGS_QUERY_KEY = "logs";
 
-      const localStorageLogsKey = [LOGS_QUERY_KEY, chainId].join('_');
-      const cachedString = localStorage.getItem(localStorageLogsKey);
-      const cachedLogs = cachedString ? JSON.parse(cachedString) : { blockNumber: null, logs: [] };
+export const useGetValidatorRegistryLogs = (chainId: number) => {
+  
+  // Version: 1 byte
+  // Chain ID: 8 bytes
+  // Validator Registry Address: 20 bytes (Ethereum address)
+  // Validator Index: 8 bytes
+  // Nonce: 8 bytes
+  // Action: 1 byte
+  const offset = 1 + 8 + 20; // skip Version, Chain ID, and Address
 
-      const responseLogs = await provider.getLogs({
-        address: chain.contracts.validatorRegistry.address,
-        topics: [],
-        fromBlock: Number(cachedLogs.blockNumber) ?? 'earliest',
-        toBlock: 'latest'
-      });
-      const allLogs = [...cachedLogs.logs, ...responseLogs];
-      const blockNumber = responseLogs.length > 0 ? responseLogs[responseLogs.length - 1].blockNumber + 1 : cachedLogs.blockNumber;
+  ValidatorRegistryContract.Updated.loader(({ event, context }) => {
+    context.ValidatorIndex.load(event.params.message.toString().slice(offset, offset + 8));
+  });
+  return useQuery({
+    queryKey: [LOGS_QUERY_KEY, chainId],
+    queryFn: async () => {
+      try {
+        const chain = CHAINS_MAP[chainId];
+        const rpc = chain.rpcUrls.default.http[0];
+        const provider = new providers.JsonRpcProvider(rpc);
 
-      localStorage.setItem(localStorageLogsKey, JSON.stringify({
-        blockNumber: blockNumber,
-        logs: allLogs,
-      }));
+        const localStorageLogsKey = [LOGS_QUERY_KEY, chainId].join("_");
+        const cachedString = localStorage.getItem(localStorageLogsKey);
+        const cachedLogs = cachedString
+          ? JSON.parse(cachedString)
+          : { blockNumber: null, logs: [] };
 
-      const contract = new Contract(
-        chain.contracts.validatorRegistry.address,
-        validatorRegistryABI,
-        provider
-      );
+        const responseLogs = await provider.getLogs({
+          address: chain.contracts.validatorRegistry.address,
+          topics: [],
+          fromBlock: Number(cachedLogs.blockNumber) ?? "earliest",
+          toBlock: "latest",
+        });
+        const allLogs = [...cachedLogs.logs, ...responseLogs];
+        const blockNumber =
+          responseLogs.length > 0
+            ? responseLogs[responseLogs.length - 1].blockNumber + 1
+            : cachedLogs.blockNumber;
 
-      const parsedlogs = allLogs.map((log: any) => contract.interface.parseLog(log));
+        localStorage.setItem(
+          localStorageLogsKey,
+          JSON.stringify({
+            blockNumber: blockNumber,
+            logs: allLogs,
+          })
+        );
 
-      console.log('[service][logs] queried logs', { parsedlogs });
+        const contract = new Contract(
+          chain.contracts.validatorRegistry.address,
+          validatorRegistryABI,
+          provider
+        );
 
-      return parsedlogs;
-    } catch (error) {
-      console.error('[service][logs] Failed to query logs', error);
-    }
+        const parsedlogs = allLogs.map((log: any) =>
+          contract.interface.parseLog(log)
+        );
 
-    return;
-  },
-  enabled: Boolean(chainId),
-});
+        console.log("[service][logs] queried logs", { parsedlogs });
+
+        return parsedlogs;
+      } catch (error) {
+        console.error("[service][logs] Failed to query logs", error);
+      }
+
+      return;
+    },
+    enabled: Boolean(chainId),
+  });
+};
