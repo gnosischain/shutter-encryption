@@ -1,0 +1,6 @@
+type ValidatorRegistry_Updated {
+  id: ID!
+  message: String!
+  signature: String!
+}
+
