@@ -66,8 +66,6 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
     value: token?.address === nativeXDaiToken.address ? parseEther(amount.toString()) : 0 as unknown as bigint,
   });
 
-  console.log(transactionData.data);
-
   const onSubmit = useCallback(() => {
     submit(transactionData, 0);
   }, [submit, transactionData]);
