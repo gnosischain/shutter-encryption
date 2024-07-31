@@ -34,7 +34,7 @@ export const ShutterTimer = () => {
     if (!shutteredValidatorIndexes || !dutiesProposer) return;
 
     return dutiesProposer?.filter((duty: any) => {
-      return shutteredValidatorIndexes.has(Number(duty.validator_index));
+      return shutteredValidatorIndexes.includes(Number(duty.validator_index));
     });
   }, [dutiesProposer, shutteredValidatorIndexes]);
 

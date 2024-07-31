@@ -1,19 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLazyQuery } from '@apollo/client';
 
-
 import { GET_UPDATES } from './ValidatorRegistryQL';
 
 export interface ValidatorRegistryLog {
   message: string,
   signature: string,
+  blockNumber: string,
 }
 
 const SUB_GRAPH_MAX_QUERY_LOGS = 1000;
 
 // query
 const LOGS_QUERY_KEY = 'logs';
-export const useGetValidatorRegistryLogs = (chainId: number) => {
+export const useGetValidatorRegistryLogs = (chainId: number, lastBlockNumber: number, enabled: boolean) => {
   const [getUpdates] = useLazyQuery(GET_UPDATES);
 
   return useQuery({
@@ -25,7 +25,7 @@ export const useGetValidatorRegistryLogs = (chainId: number) => {
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
-          const response = await getUpdates({ variables: { first: SUB_GRAPH_MAX_QUERY_LOGS, skip }});
+          const response = await getUpdates({ variables: { first: SUB_GRAPH_MAX_QUERY_LOGS, skip, lastBlockNumber }});
 
           const logs = response.data?.updateds;
 
@@ -47,6 +47,6 @@ export const useGetValidatorRegistryLogs = (chainId: number) => {
 
       return;
     },
-    enabled: Boolean(chainId),
+    enabled: enabled && Boolean(chainId),
   });
 };

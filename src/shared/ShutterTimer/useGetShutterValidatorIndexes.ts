@@ -1,6 +1,7 @@
 import { BigNumber, utils } from 'ethers';
-import { useMemo } from 'react';
+import { useEffect } from 'react';
 
+import { useValidatorIndexesStore } from '@/stores/useValidatorIndexesStore';
 import { useGetValidatorRegistryLogs } from './useGetValidatorRegistryLogs';
 
 function extractValidatorIndex(messageHex: string) {
@@ -25,21 +26,36 @@ function extractSubscriptionStatus(messageHex: string) {
 }
 
 export const useGetShutterValidatorIndexes = (chainId: number) => {
-  const { data: logs, isLoading } = useGetValidatorRegistryLogs(chainId);
+  const {
+    validatorIndexes, lastBlockNumber, _hasHydrated,
+    setValidatorIndexes, setLastBlockNumber,
+  } = useValidatorIndexesStore(state => state);
 
-  const validatorIndexes = useMemo(() => {
-    return logs?.reduce((acc, log) => {
+  const { data: logs, isLoading } = useGetValidatorRegistryLogs(chainId, lastBlockNumber, _hasHydrated);
+
+  useEffect(() => {
+    let currentIndexes = validatorIndexes;
+    let newLastBlock = lastBlockNumber;
+    const indexes = logs?.reduce((acc, log) => {
       const validatorIndex = extractValidatorIndex(log.message);
       const subscriptionStatus = extractSubscriptionStatus(log.message);
 
       if (subscriptionStatus) {
         acc.add(validatorIndex);
       } else {
+        currentIndexes = currentIndexes.filter((index) => index !== validatorIndex);
         acc.delete(validatorIndex);
       }
 
+      newLastBlock = Number(log.blockNumber);
+
       return acc;
-    }, new Set());
+    }, new Set<number>());
+
+    if (indexes && newLastBlock > lastBlockNumber) {
+      setValidatorIndexes([...currentIndexes, ...indexes]);
+      setLastBlockNumber(newLastBlock);
+    }
   }, [logs]);
 
   return {
