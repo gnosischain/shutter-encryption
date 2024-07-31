@@ -1,0 +1,26 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ValidatorRegistry
+    network: gnosis
+    source:
+      address: "0xefCC23E71f6bA9B22C4D28F7588141d44496A6D6"
+      abi: ValidatorRegistry
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Updated
+      abis:
+        - name: ValidatorRegistry
+          file: ./abis/ValidatorRegistry.json
+      eventHandlers:
+        - event: Updated(bytes,bytes)
+          handler: handleUpdated
+      file: ./src/validator-registry.ts
