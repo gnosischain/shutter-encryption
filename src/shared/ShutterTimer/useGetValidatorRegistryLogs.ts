@@ -32,7 +32,7 @@ export const useGetValidatorRegistryLogs = (chainId: number, lastBlockNumber: nu
 
           allLogs = [...allLogs, ...(logs ?? [])];
 
-          if (logs.length < SUB_GRAPH_MAX_QUERY_LOGS) {
+          if (!logs || logs.length < SUB_GRAPH_MAX_QUERY_LOGS) {
             break; // Break the loop if the number of logs fetched is less than 'first', indicating the end of data
           }
         }

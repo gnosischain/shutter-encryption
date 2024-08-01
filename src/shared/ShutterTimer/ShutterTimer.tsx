@@ -45,7 +45,7 @@ export const ShutterTimer = () => {
 
     const interval = setInterval(() => {
       const currentSlot = getSlot(chain.genesisTime);
-      const match = matches.find((m: any) => m.slot > currentSlot);
+      const match = matches.find((m: any) => Number(m.slot) > currentSlot);
 
       if (!match) {
         setTimeDifference(0);
