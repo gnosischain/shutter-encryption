@@ -89,7 +89,8 @@ export const CHAINS: EnhancedChain[] = [
         img: "/gnosisGreen.svg",
       },
     ],
-    theGraphUrl: ``,
+    // theGraphUrl: `https://api.studio.thegraph.com/query/83608/m-shutter-validator-registry/мv0.0.2`,
+    theGraphUrl: `https://gateway-arbitrum.network.thegraph.com/api/${config.theGraphApiKey}/subgraphs/id/GkoCJAFgEvt6UWQkG3W1JpR2tDtRmUkUXCcHjrrz2M4E`,
   },
   {
     ...gnosisChiado,

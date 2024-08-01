@@ -22,11 +22,11 @@ interface TransferFormProps {
 }
 
 export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormProps) => {
-  const [chain, setChain] = useState(mappedChains[0]);
   const [token, setToken] = useState(defaultToken);
   const [amount, setAmount] = useState("0");
   const [to, setTo] = useState('');
   const chainId = useChainId();
+  const [chain, setChain] = useState(mappedChains.find((c: { id: number; }) => c.id === chainId));
   const { switchChain } = useSwitchChain();
 
   const { balance } = useTokenBalance({

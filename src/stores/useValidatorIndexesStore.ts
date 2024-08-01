@@ -1,20 +1,23 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
+import { CHAINS } from '@/constants/chains';
 import { createSelectors } from './createSelectors';
 
 type State = {
-  validatorIndexes: number[],
-  lastBlockNumber: number,
+  [key: number]: {
+    validatorIndexes: number[],
+    lastBlockNumber: number,
+  },
 
   _hasHydrated: boolean,
 };
 
 type Action = {
-  setValidatorIndexes: (validatorIndexes: number[]) => void,
-  addValidatorIndex: (validatorIndex: number) => void,
-  removeValidatorIndex: (validatorIndex: number) => void,
-  setLastBlockNumber: (lastBlockNumber: number) => void,
+  setValidatorIndexes: (validatorIndexes: number[], chainId: number) => void,
+  addValidatorIndex: (validatorIndex: number, chainId: number) => void,
+  removeValidatorIndex: (validatorIndex: number, chainId: number) => void,
+  setLastBlockNumber: (lastBlockNumber: number, chainId: number) => void,
 
   setHasHydrated: (state: boolean) => void,
 };
@@ -22,22 +25,50 @@ type Action = {
 const useValidatorIndexesStoreBase = create<State & Action>()(
   persist(
     (set) => ({
-      validatorIndexes: [],
-      lastBlockNumber: 0,
+      [CHAINS[0].id]: {
+        validatorIndexes: [],
+        lastBlockNumber: 0,
+      },
+      [CHAINS[1].id]: {
+        validatorIndexes: [],
+        lastBlockNumber: 0,
+      },
 
       _hasHydrated: false,
       setHasHydrated: (state) => set({ _hasHydrated: state }),
 
-      setValidatorIndexes: (validatorIndexes) => set({ validatorIndexes }),
-      addValidatorIndex: (validatorIndex) => set((state) => {
-        state.validatorIndexes.push(validatorIndex);
-
-        return { validatorIndexes: state.validatorIndexes };
+      setValidatorIndexes: (validatorIndexes, chainId) => set((state) => {
+        return {
+          [chainId]: {
+            validatorIndexes: validatorIndexes,
+            lastBlockNumber: state[chainId].lastBlockNumber,
+          }
+        };
       }),
-      removeValidatorIndex: (validatorIndex) => set((state) => {
-        return { validatorIndexes: state.validatorIndexes.filter((index) => index !== validatorIndex) };
+      addValidatorIndex: (validatorIndex, chainId) => set((state) => {
+        return {
+          [chainId]: {
+            validatorIndexes: [...state[chainId].validatorIndexes, validatorIndex],
+            lastBlockNumber: state[chainId].lastBlockNumber,
+          }
+        }
       }),
-      setLastBlockNumber: (lastBlockNumber) => set({ lastBlockNumber }),
+      removeValidatorIndex: (validatorIndex, chainId) => set((state) => {
+        return {
+          [chainId]: {
+            validatorIndexes: state[chainId].validatorIndexes.filter((index) => index !== validatorIndex),
+            lastBlockNumber: state[chainId].lastBlockNumber,
+          }
+        };
+      }),
+      setLastBlockNumber: (lastBlockNumber, chainId) => set((state) => {
+        return {
+          [chainId]: {
+            validatorIndexes: state[chainId].validatorIndexes,
+            lastBlockNumber: lastBlockNumber,
+          }
+        };
+      }),
     }),
     {
       name: 'validator-indexes-storage', // name of the item in the storage (must be unique)
@@ -47,7 +78,7 @@ const useValidatorIndexesStoreBase = create<State & Action>()(
         console.log('hydration starts')
 
         return (state, error) => {
-          console.log({ state });
+          console.debug({ state });
           if (error) {
             console.log('an error happened during hydration', error)
           } else {

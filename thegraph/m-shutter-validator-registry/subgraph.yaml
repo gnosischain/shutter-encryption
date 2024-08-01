@@ -10,7 +10,7 @@ dataSources:
     source:
       address: "0xefCC23E71f6bA9B22C4D28F7588141d44496A6D6"
       abi: ValidatorRegistry
-      startBlock: 0
+      startBlock: 34627170
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

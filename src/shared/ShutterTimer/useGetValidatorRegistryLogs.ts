@@ -10,6 +10,7 @@ export interface ValidatorRegistryLog {
 }
 
 const SUB_GRAPH_MAX_QUERY_LOGS = 1000;
+const SKIP_LIMIT = 5000;
 
 // query
 const LOGS_QUERY_KEY = 'logs';
@@ -25,11 +26,18 @@ export const useGetValidatorRegistryLogs = (chainId: number, lastBlockNumber: nu
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
-          const response = await getUpdates({ variables: { first: SUB_GRAPH_MAX_QUERY_LOGS, skip, lastBlockNumber }});
+          if (skip > SKIP_LIMIT) {
+            // console.error('[service][logs] Exceeded skip limit');
+            // break;
+          }
+
+          const blockNumber = allLogs.length ? allLogs[allLogs.length - 1].blockNumber : lastBlockNumber;
+
+          const response = await getUpdates({ variables: { first: SUB_GRAPH_MAX_QUERY_LOGS, lastBlockNumber: Number(blockNumber) }});
 
           const logs = response.data?.updateds;
 
-          allLogs = [...allLogs, ...logs];
+          allLogs = [...allLogs, ...(logs ?? [])];
 
           if (logs.length < SUB_GRAPH_MAX_QUERY_LOGS) {
             break; // Break the loop if the number of logs fetched is less than 'first', indicating the end of data
@@ -38,7 +46,7 @@ export const useGetValidatorRegistryLogs = (chainId: number, lastBlockNumber: nu
           skip += SUB_GRAPH_MAX_QUERY_LOGS; // Increment skip by 'first' for the next page
         }
 
-        console.log('[service][logs] queried logs', { allLogs });
+        console.log('[service][logs] queried logs', { allLogs, chainId });
 
         return allLogs;
       } catch (error) {

@@ -12,7 +12,6 @@ export const GraphQLProvider = ({ children }: { children: any }) => {
     const chain = CHAINS_MAP[chainId];
 
     const link = new HttpLink({
-      // uri: 'https://api.studio.thegraph.com/query/83608/shutter-validator-registry/v0.0.1',
       uri: chain.theGraphUrl,
     });
 
