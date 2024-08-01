@@ -1,66 +1,50 @@
-import { useQuery } from "@tanstack/react-query";
-import { providers, Contract } from "ethers";
-import { CHAINS_MAP } from "@/constants/chains";
-import validatorRegistryABI from "@/abis/validatorRegistryABI";
+import { useQuery } from '@tanstack/react-query';
+import { useLazyQuery } from '@apollo/client';
+import { GET_UPDATES } from './ValidatorRegistryQL';
+
+export interface ValidatorRegistryLog {
+  message: string,
+  signature: string,
+  blockNumber: string,
+}
+
+const SUB_GRAPH_MAX_QUERY_LOGS = 1000;
 
 // query
-const LOGS_QUERY_KEY = "logs";
-
-export const useGetValidatorRegistryLogs = (chainId: number) => {
+const LOGS_QUERY_KEY = 'logs';
+export const useGetValidatorRegistryLogs = (chainId: number, lastBlockNumber: number, enabled: boolean) => {
+  const [getUpdates] = useLazyQuery(GET_UPDATES);
 
   return useQuery({
     queryKey: [LOGS_QUERY_KEY, chainId],
     queryFn: async () => {
       try {
-        const chain = CHAINS_MAP[chainId];
-        const rpc = chain.rpcUrls.default.http[0];
-        const provider = new providers.JsonRpcProvider(rpc);
+        let allLogs: ValidatorRegistryLog[] = [];
 
-        const localStorageLogsKey = [LOGS_QUERY_KEY, chainId].join("_");
-        const cachedString = localStorage.getItem(localStorageLogsKey);
-        const cachedLogs = cachedString
-          ? JSON.parse(cachedString)
-          : { blockNumber: null, logs: [] };
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const blockNumber = allLogs.length ? allLogs[allLogs.length - 1].blockNumber : lastBlockNumber;
 
-        const responseLogs = await provider.getLogs({
-          address: chain.contracts.validatorRegistry.address,
-          topics: [],
-          fromBlock: Number(cachedLogs.blockNumber) ?? "earliest",
-          toBlock: "latest",
-        });
-        const allLogs = [...cachedLogs.logs, ...responseLogs];
-        const blockNumber =
-          responseLogs.length > 0
-            ? responseLogs[responseLogs.length - 1].blockNumber + 1
-            : cachedLogs.blockNumber;
+          const response = await getUpdates({ variables: { first: SUB_GRAPH_MAX_QUERY_LOGS, lastBlockNumber: Number(blockNumber) }});
 
-        localStorage.setItem(
-          localStorageLogsKey,
-          JSON.stringify({
-            blockNumber: blockNumber,
-            logs: allLogs,
-          })
-        );
+          const logs = response.data?.updateds;
 
-        const contract = new Contract(
-          chain.contracts.validatorRegistry.address,
-          validatorRegistryABI,
-          provider
-        );
+          allLogs = [...allLogs, ...(logs ?? [])];
 
-        const parsedlogs = allLogs.map((log: any) =>
-          contract.interface.parseLog(log)
-        );
+          if (logs.length < SUB_GRAPH_MAX_QUERY_LOGS) {
+            break; // Break the loop if the number of logs fetched is less than 'first', indicating the end of data
+          }
+        }
 
-        console.log("[service][logs] queried logs", { parsedlogs });
+        console.log('[service][logs] queried logs', { allLogs, chainId });
 
-        return parsedlogs;
+        return allLogs;
       } catch (error) {
-        console.error("[service][logs] Failed to query logs", error);
+        console.error('[service][logs] Failed to query logs', error);
       }
 
       return;
     },
-    enabled: Boolean(chainId),
+    enabled: enabled && Boolean(chainId),
   });
 };

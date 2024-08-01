@@ -32,6 +32,7 @@ type EnhancedChain = Chain & {
   gbcUrl: string;
   genesisTime: number;
   tokens: Token[];
+  envioUrl: string;
 };
 
 type ChainMap = {
@@ -86,6 +87,7 @@ export const CHAINS: EnhancedChain[] = [
         img: "/gnosisGreen.svg",
       },
     ],
+    envioUrl: "http://localhost:8080/v1/graphql"
   },
   {
     ...gnosisChiado,
@@ -127,6 +129,7 @@ export const CHAINS: EnhancedChain[] = [
         img: "/gnosisGreen.svg",
       },
     ],
+    envioUrl: "http://localhost:8080/v1/graphql"
   },
 ];
 
