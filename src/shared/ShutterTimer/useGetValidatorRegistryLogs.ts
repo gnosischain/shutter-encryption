@@ -1,26 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { providers, Contract } from "ethers";
-
 import { CHAINS_MAP } from "@/constants/chains";
 import validatorRegistryABI from "@/abis/validatorRegistryABI";
-import { ValidatorIndexEntity, ValidatorRegistryContract } from "../../../envio/generated";
 
 // query
 const LOGS_QUERY_KEY = "logs";
 
 export const useGetValidatorRegistryLogs = (chainId: number) => {
-  
-  // Version: 1 byte
-  // Chain ID: 8 bytes
-  // Validator Registry Address: 20 bytes (Ethereum address)
-  // Validator Index: 8 bytes
-  // Nonce: 8 bytes
-  // Action: 1 byte
-  const offset = 1 + 8 + 20; // skip Version, Chain ID, and Address
 
-  ValidatorRegistryContract.Updated.loader(({ event, context }) => {
-    context.ValidatorIndex.load(event.params.message.toString().slice(offset, offset + 8));
-  });
   return useQuery({
     queryKey: [LOGS_QUERY_KEY, chainId],
     queryFn: async () => {
