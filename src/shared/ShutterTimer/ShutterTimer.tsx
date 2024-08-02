@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useChainId } from 'wagmi';
-import { CircularProgress, Tooltip } from '@nextui-org/react';
+import { CircularProgress, Tooltip, Spinner } from '@nextui-org/react';
 
 import { CHAINS_MAP } from '@/constants/chains';
 
@@ -26,7 +26,7 @@ export const ShutterTimer = () => {
   const [currentEpoch, setCurrentEpoch] = useState(getEpoch(chain.genesisTime));
   const [timeDifference, setTimeDifference] = useState(0);
 
-  const shutteredValidatorIndexes = useGetShutterValidatorIndexes(chainId);
+  const { validatorIndexes: shutteredValidatorIndexes, isLoading } = useGetShutterValidatorIndexes(chainId);
 
   const { data: dutiesProposer } = useFetchDutiesProposer(chain.gbcUrl, currentEpoch);
 
@@ -34,7 +34,7 @@ export const ShutterTimer = () => {
     if (!shutteredValidatorIndexes || !dutiesProposer) return;
 
     return dutiesProposer?.filter((duty: any) => {
-      return shutteredValidatorIndexes.has(Number(duty.validator_index));
+      return shutteredValidatorIndexes.includes(Number(duty.validator_index));
     });
   }, [dutiesProposer, shutteredValidatorIndexes]);
 
@@ -45,7 +45,7 @@ export const ShutterTimer = () => {
 
     const interval = setInterval(() => {
       const currentSlot = getSlot(chain.genesisTime);
-      const match = matches.find((m: any) => m.slot > currentSlot);
+      const match = matches.find((m: any) => Number(m.slot) > currentSlot);
 
       if (!match) {
         setTimeDifference(0);
@@ -65,16 +65,20 @@ export const ShutterTimer = () => {
 
   return (
     <div className="fixed bottom-0 right-4 text-xs w-full flex justify-end">
-      <Tooltip content={`Next Shutter transactions will be included in ~${timeDifference} seconds`} color='danger' placement='left'>
-        <CircularProgress
-          className="my-4"
-          aria-label="Loading..."
-          size="lg"
-          value={100 - timeDifference}
-          color="warning"
-          showValueLabel={true}
-        />
-      </Tooltip>
+      {isLoading ? (
+        <Spinner className="my-4" />
+      ) : (
+        <Tooltip content={`Next Shutter transactions will be included in ~${timeDifference} seconds`} color='danger' placement='left'>
+          <CircularProgress
+            className="my-4"
+            aria-label="Loading..."
+            size="lg"
+            value={100 - timeDifference}
+            color="warning"
+            showValueLabel={true}
+          />
+        </Tooltip>
+      )}
     </div>
   )
 };

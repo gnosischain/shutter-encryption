@@ -1,5 +1,7 @@
-import { gnosis, gnosisChiado, type Chain } from "wagmi/chains";
-import { type Address } from "viem";
+import { gnosis, gnosisChiado, type Chain } from 'wagmi/chains';
+import { type Address } from 'viem';
+
+import config from '@/constants/config';
 
 type Token = {
   address: string;
@@ -32,6 +34,7 @@ type EnhancedChain = Chain & {
   gbcUrl: string;
   genesisTime: number;
   tokens: Token[];
+  theGraphUrl: string,
 };
 
 type ChainMap = {
@@ -86,6 +89,8 @@ export const CHAINS: EnhancedChain[] = [
         img: "/gnosisGreen.svg",
       },
     ],
+    // theGraphUrl: `https://api.studio.thegraph.com/query/83608/m-shutter-validator-registry/мv0.0.2`,
+    theGraphUrl: `https://gateway-arbitrum.network.thegraph.com/api/${config.theGraphApiKey}/subgraphs/id/GkoCJAFgEvt6UWQkG3W1JpR2tDtRmUkUXCcHjrrz2M4E`,
   },
   {
     ...gnosisChiado,
@@ -127,6 +132,8 @@ export const CHAINS: EnhancedChain[] = [
         img: "/gnosisGreen.svg",
       },
     ],
+    // https://api.studio.thegraph.com/query/83608/shutter-validator-registry/v0.0.1
+    theGraphUrl: `https://gateway-arbitrum.network.thegraph.com/api/${config.theGraphApiKey}/subgraphs/id/6An9eFzxuuEqPWncZVP6Gr1nEpx4ktz87Re4zANo3Z9`,
   },
 ];
 

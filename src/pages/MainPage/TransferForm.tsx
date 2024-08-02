@@ -22,11 +22,11 @@ interface TransferFormProps {
 }
 
 export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormProps) => {
-  const [chain, setChain] = useState(mappedChains[0]);
   const [token, setToken] = useState(defaultToken);
   const [amount, setAmount] = useState("0");
   const [to, setTo] = useState('');
   const chainId = useChainId();
+  const [chain, setChain] = useState(mappedChains.find((c: { id: number; }) => c.id === chainId));
   const { switchChain } = useSwitchChain();
 
   const { balance } = useTokenBalance({
@@ -65,8 +65,6 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
     to: token?.address === nativeXDaiToken.address ? to : token?.address,
     value: token?.address === nativeXDaiToken.address ? parseEther(amount.toString()) : 0 as unknown as bigint,
   });
-
-  console.log(transactionData.data);
 
   const onSubmit = useCallback(() => {
     submit(transactionData, 0);
