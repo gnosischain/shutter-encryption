@@ -25,7 +25,6 @@ export const useGetValidatorRegistryLogs = (chainId: number, enabled: boolean) =
           // const blockNumber = allLogs.length ? allLogs[allLogs.length - 1].blockNumber : lastBlockNumber;
 
           const response = await getUpdates({ variables: { first: ENVIO_MAX_QUERY_LOGS } });
-          console.log(response.data.ValidatorIndex);
 
           const logs = response.data.ValidatorIndex;
 
