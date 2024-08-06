@@ -7,6 +7,7 @@ export interface ValidatorIndex {
   active: boolean,
 }
 
+// Max query limitation is different when using the hosted service. If run locally, it might be possible to configure this
 const ENVIO_MAX_QUERY_LOGS = 10000;
 
 // query

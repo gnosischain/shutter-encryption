@@ -87,7 +87,8 @@ export const CHAINS: EnhancedChain[] = [
         img: "/gnosisGreen.svg",
       },
     ],
-    envioUrl: "http://localhost:8080/v1/graphql"
+    envioUrl: "https://indexer.bigdevenergy.link/ff700bf/v1/graphql"
+    // envioUrl: "http://localhost:8080/v1/graphql"
   },
   {
     ...gnosisChiado,
@@ -129,7 +130,8 @@ export const CHAINS: EnhancedChain[] = [
         img: "/gnosisGreen.svg",
       },
     ],
-    envioUrl: "http://localhost:8080/v1/graphql"
+    envioUrl: "https://indexer.bigdevenergy.link/ff700bf/v1/graphql"
+    // envioUrl: "http://localhost:8080/v1/graphql"
   },
 ];
 
