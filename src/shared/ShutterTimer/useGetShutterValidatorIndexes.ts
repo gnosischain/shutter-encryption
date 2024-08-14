@@ -36,19 +36,24 @@ export const useGetShutterValidatorIndexes = (chainId: number) => {
     let newLastBlock = lastBlockNumber;
 
     const indexes = logs?.reduce((acc, log) => {
-      const validatorIndex = extractValidatorIndex(log.message);
-      const subscriptionStatus = extractSubscriptionStatus(log.message);
+      try {
+        const validatorIndex = extractValidatorIndex(log.message);
+        const subscriptionStatus = extractSubscriptionStatus(log.message);
 
-      if (subscriptionStatus) {
-        acc.add(validatorIndex);
-      } else {
-        currentIndexes = currentIndexes.filter((index) => index !== validatorIndex);
-        acc.delete(validatorIndex);
+        if (subscriptionStatus) {
+          acc.add(validatorIndex);
+        } else {
+          currentIndexes = currentIndexes.filter((index) => index !== validatorIndex);
+          acc.delete(validatorIndex);
+        }
+
+        newLastBlock = Number(log.blockNumber);
+
+        return acc;
+      } catch (err) {
+        console.error('Failed to extract validator index from log', err);
+        return acc;
       }
-
-      newLastBlock = Number(log.blockNumber);
-
-      return acc;
     }, new Set<number>());
 
     if (indexes && newLastBlock > lastBlockNumber) {
