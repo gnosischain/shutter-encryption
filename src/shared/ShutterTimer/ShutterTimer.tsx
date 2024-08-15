@@ -49,7 +49,7 @@ export const ShutterTimer = () => {
 
       if (!match) {
         setTimeDifference(0);
-        setCurrentEpoch(getEpoch(chain.genesisTime) + 1);
+        setCurrentEpoch(currentEpoch + 1);
         clearInterval(interval);
         return;
       }
@@ -73,7 +73,8 @@ export const ShutterTimer = () => {
             className="my-4"
             aria-label="Loading..."
             size="lg"
-            value={100 - timeDifference}
+            value={timeDifference}
+            formatOptions={{ style: "unit", unit: "second" }}
             color="warning"
             showValueLabel={true}
           />
