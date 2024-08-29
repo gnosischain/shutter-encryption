@@ -19,16 +19,37 @@ const getSlot = (genesisTime: number) => {
   return Math.floor(((Date.now() / 1000) - genesisTime) / SLOT_TIME);
 }
 
+const getLoadingLabel = ({ isValidatorsLoading, isProposersLoading, isWaiting, timeDifference }: {
+  isValidatorsLoading: boolean,
+  isProposersLoading: boolean,
+  isWaiting: boolean,
+  timeDifference: number,
+}) => {
+  if (isValidatorsLoading) {
+    return 'Fetching shutter validators...';
+  }
+  if (isWaiting) {
+    return 'Waiting for epoch with shutter validators...';
+  }
+  if (isProposersLoading) {
+    return 'Fetching proposers...';
+  }
+
+  return `Next Shutter transactions will be included in ~${timeDifference} seconds`;
+}
+
 export const ShutterTimer = () => {
   const chainId = useChainId();
   const chain = useMemo(() => CHAINS_MAP[chainId], [chainId]);
 
   const [currentEpoch, setCurrentEpoch] = useState(getEpoch(chain.genesisTime));
   const [timeDifference, setTimeDifference] = useState(0);
+  // waiting for next epoch
+  const [isWaiting, setIsWaiting] = useState(false);
 
-  const { validatorIndexes: shutteredValidatorIndexes, isLoading } = useGetShutterValidatorIndexes(chainId);
+  const { validatorIndexes: shutteredValidatorIndexes, isLoading: isValidatorsLoading } = useGetShutterValidatorIndexes(chainId);
 
-  const { data: dutiesProposer } = useFetchDutiesProposer(chain.gbcUrl, currentEpoch);
+  const { data: dutiesProposer, isLoading: isProposersLoading } = useFetchDutiesProposer(chain.gbcUrl, currentEpoch);
 
   const matches = useMemo(() => {
     if (!shutteredValidatorIndexes || !dutiesProposer) return;
@@ -49,8 +70,18 @@ export const ShutterTimer = () => {
 
       if (!match) {
         setTimeDifference(0);
-        setCurrentEpoch(currentEpoch + 1);
-        clearInterval(interval);
+
+        const nextEpochStart = chain.genesisTime + (currentEpoch + 1) * SLOTS_PER_EPOCH * SLOT_TIME;
+        const oneEpochAhead = Date.now() / 1000 + SLOTS_PER_EPOCH * SLOT_TIME;
+
+        if (nextEpochStart < oneEpochAhead) {
+          setCurrentEpoch(currentEpoch + 1);
+          clearInterval(interval);
+          setIsWaiting(false);
+        } else {
+          setIsWaiting(true);
+        }
+
         return;
       }
 
@@ -65,21 +96,29 @@ export const ShutterTimer = () => {
 
   return (
     <div className="fixed bottom-0 right-4 text-xs w-full flex justify-end">
-      {isLoading ? (
+      <Tooltip
+        content={getLoadingLabel({
+          isValidatorsLoading,
+          isProposersLoading,
+          isWaiting,
+          timeDifference,
+        })}
+        color='danger'
+        placement='left'>
+      {isValidatorsLoading || isProposersLoading || isWaiting ? (
         <Spinner className="my-4" />
       ) : (
-        <Tooltip content={`Next Shutter transactions will be included in ~${timeDifference} seconds`} color='danger' placement='left'>
-          <CircularProgress
-            className="my-4"
-            aria-label="Loading..."
-            size="lg"
-            value={timeDifference}
-            formatOptions={{ style: "unit", unit: "second" }}
-            color="warning"
-            showValueLabel={true}
-          />
-        </Tooltip>
+        <CircularProgress
+          className="my-4"
+          aria-label="Loading..."
+          size="lg"
+          value={timeDifference}
+          formatOptions={{ style: "unit", unit: "second" }}
+          color="warning"
+          showValueLabel={true}
+        />
       )}
+      </Tooltip>
     </div>
   )
 };
