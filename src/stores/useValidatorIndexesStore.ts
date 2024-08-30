@@ -66,7 +66,7 @@ const useValidatorIndexesStoreBase = create<State & Action>()(
             },
           };
         }),
-      setLastBlockNumber: (lastBlockNumber, chainId: string) =>
+      setLastBlockNumber: (lastBlockNumber, chainId: number) =>
         set((state) => {
           return {
             [chainId]: {

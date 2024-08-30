@@ -5,7 +5,7 @@ import { Toaster } from 'sonner';
 
 import { Web3ModalProvider } from '@/providers/Web3ModalProvider';
 import { GraphQLProvider } from '@/providers/GraphQLProvider';
-import App from './App.tsx';
+import App from './App';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

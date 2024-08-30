@@ -2,6 +2,8 @@ import { hexToBytes, keccak256, bytesToBigInt, bytesToHex, numberToBytes } from 
 import pkg from 'lodash';
 const { zip } = pkg;
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import { Blst, P1, P2, PT } from './blst.hpp.ts';
 
 declare global {
