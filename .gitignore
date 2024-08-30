@@ -26,3 +26,5 @@ dist-ssr
 .vite
 .firebaserc
 .firebase
+
+--fix

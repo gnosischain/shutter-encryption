@@ -42,7 +42,7 @@ export interface ScalarConstructor {
 }
 
 export interface Scalar {
-  hash_to (msg: binary_string, DST?: string): this;
+  hash_to(msg: binary_string, DST?: string): this;
   dup(): Scalar;
   from_bendian(be: bytes): this;
   from_lendian(le: bytes): this;
@@ -76,7 +76,7 @@ export interface P1_Affine {
     hash_or_encode: boolean,
     msg: binary_string,
     DST?: string,
-    aug?: bytes
+    aug?: bytes,
   ): BLST_ERROR;
 }
 
@@ -131,7 +131,7 @@ export interface P2_Affine {
     hash_or_encode: boolean,
     msg: binary_string,
     DST?: string,
-    aug?: bytes
+    aug?: bytes,
   ): BLST_ERROR;
 }
 
@@ -192,31 +192,21 @@ export interface PairingConstructor {
 }
 
 export interface Pairing {
-  aggregate(
-    pk: P1_Affine,
-    sig: P2_Affine,
-    msg: binary_string,
-    aug?: bytes
-  ): BLST_ERROR;
-  aggregate(
-    pk: P2_Affine,
-    sig: P1_Affine,
-    msg: binary_string,
-    aug?: bytes
-  ): BLST_ERROR;
+  aggregate(pk: P1_Affine, sig: P2_Affine, msg: binary_string, aug?: bytes): BLST_ERROR;
+  aggregate(pk: P2_Affine, sig: P1_Affine, msg: binary_string, aug?: bytes): BLST_ERROR;
   mul_n_aggregate(
     pk: P1_Affine,
     sig: P2_Affine,
     scalar: scalar,
     msg: binary_string,
-    aug?: bytes
+    aug?: bytes,
   ): BLST_ERROR;
   mul_n_aggregate(
     pk: P2_Affine,
     sig: P1_Affine,
     scalar: scalar,
     msg: binary_string,
-    aug?: bytes
+    aug?: bytes,
   ): BLST_ERROR;
   commit(): void;
   merge(ctx: Pairing): BLST_ERROR;

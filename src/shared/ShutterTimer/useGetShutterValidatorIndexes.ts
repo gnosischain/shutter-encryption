@@ -26,10 +26,14 @@ function extractSubscriptionStatus(messageHex: string) {
 }
 
 export const useGetShutterValidatorIndexes = (chainId: number) => {
-  const { validatorIndexes, lastBlockNumber} = useValidatorIndexesStore(state => state[chainId]);
+  const { validatorIndexes, lastBlockNumber } = useValidatorIndexesStore((state) => state[chainId]);
   const { _hasHydrated, setValidatorIndexes, setLastBlockNumber } = useValidatorIndexesStore();
 
-  const { data: logs, isLoading } = useGetValidatorRegistryLogs(chainId, lastBlockNumber, _hasHydrated);
+  const { data: logs, isLoading } = useGetValidatorRegistryLogs(
+    chainId,
+    lastBlockNumber,
+    _hasHydrated,
+  );
 
   useEffect(() => {
     let currentIndexes = validatorIndexes;
@@ -60,11 +64,10 @@ export const useGetShutterValidatorIndexes = (chainId: number) => {
       setValidatorIndexes([...currentIndexes, ...indexes], chainId);
       setLastBlockNumber(newLastBlock, chainId);
     }
-
   }, [logs]);
 
   return {
     validatorIndexes,
     isLoading,
-  }
+  };
 };

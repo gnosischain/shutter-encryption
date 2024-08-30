@@ -1,20 +1,20 @@
 const keyBroadcastABI = [
   {
     inputs: [
-      { internalType: "uint64", name: "eon", type: "uint64" },
-      { internalType: "bytes", name: "key", type: "bytes" },
+      { internalType: 'uint64', name: 'eon', type: 'uint64' },
+      { internalType: 'bytes', name: 'key', type: 'bytes' },
     ],
-    name: "broadcastEonKey",
+    name: 'broadcastEonKey',
     outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    inputs: [{ internalType: "uint64", name: "eon", type: "uint64" }],
-    name: "getEonKey",
-    outputs: [{ internalType: "bytes", name: "", type: "bytes" }],
-    stateMutability: "view",
-    type: "function",
+    inputs: [{ internalType: 'uint64', name: 'eon', type: 'uint64' }],
+    name: 'getEonKey',
+    outputs: [{ internalType: 'bytes', name: '', type: 'bytes' }],
+    stateMutability: 'view',
+    type: 'function',
   },
 ] as const;
 

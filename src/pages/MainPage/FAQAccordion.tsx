@@ -1,18 +1,22 @@
 import { Accordion, AccordionItem, Image } from '@nextui-org/react';
 
 const itemClasses = {
-  trigger: "bg-secondary hover:border-secondary",
-  title: "text-black",
+  trigger: 'bg-secondary hover:border-secondary',
+  title: 'text-black',
 };
 
 export const FAQAccordion = () => {
   return (
     <div className="flex justify-center w-full py-8">
-      <div className='md:w-[750px]'>
+      <div className="md:w-[750px]">
         <h2 className="text-2xl text-center my-2">FAQ</h2>
 
         <Accordion selectionMode="multiple" itemClasses={itemClasses}>
-          <AccordionItem key="1" aria-label="what" title="What is the Opt-in Shutterized Gnosis Chain?">
+          <AccordionItem
+            key="1"
+            aria-label="what"
+            title="What is the Opt-in Shutterized Gnosis Chain?"
+          >
             {`The Opt-in Shutterized Gnosis Chain is a proposal designed to enhance transaction 
           privacy and security on the Gnosis Chain. It allows users to encrypt transactions 
           to prevent frontrunning and censorship. Transactions are decrypted and executed
@@ -37,21 +41,27 @@ export const FAQAccordion = () => {
             </div>
 
             <ul className="list-disc list-inside my-2">
-              <li><b>Users</b>: Users submit encrypted transactions to the network. They encrypt these transactions using a
-                public key obtained from the Key Broadcast Contract.
+              <li>
+                <b>Users</b>: Users submit encrypted transactions to the network. They encrypt these
+                transactions using a public key obtained from the Key Broadcast Contract.
               </li>
-              <li><b>Key Broadcast Contract</b>: This contract distributes the encryption keys (public keys) to users and stores
-                them for the Keypers to access as needed.
+              <li>
+                <b>Key Broadcast Contract</b>: This contract distributes the encryption keys (public
+                keys) to users and stores them for the Keypers to access as needed.
               </li>
-              <li><b>Keypers</b>: Keypers are responsible for securely managing decryption keys. They generate decryption keys
-                and provide these to the Sequencer Contract.
+              <li>
+                <b>Keypers</b>: Keypers are responsible for securely managing decryption keys. They
+                generate decryption keys and provide these to the Sequencer Contract.
               </li>
-              <li><b>Sequencer Contract</b>: This contract manages the queue of encrypted transactions submitted by users. It
-                interacts with Keypers to obtain decryption keys and ensures that transactions are correctly ordered and
-                ready for decryption.
+              <li>
+                <b>Sequencer Contract</b>: This contract manages the queue of encrypted transactions
+                submitted by users. It interacts with Keypers to obtain decryption keys and ensures
+                that transactions are correctly ordered and ready for decryption.
               </li>
-              <li><b>Proposer</b>: The Proposer (a type of validator) retrieves decrypted transactions from the Sequencer
-                Contract, then includes them in a new block which is added to the blockchain.
+              <li>
+                <b>Proposer</b>: The Proposer (a type of validator) retrieves decrypted transactions
+                from the Sequencer Contract, then includes them in a new block which is added to the
+                blockchain.
               </li>
             </ul>
 
@@ -82,13 +92,21 @@ export const FAQAccordion = () => {
           if some keypers are temporarily unavailable.`}
           </AccordionItem>
 
-          <AccordionItem key="8" aria-label="what" title="What happens to my transaction if it can't be decrypted?">
+          <AccordionItem
+            key="8"
+            aria-label="what"
+            title="What happens to my transaction if it can't be decrypted?"
+          >
             {`If a transaction cannot be decrypted (e.g., due to corrupted data or a mismatch in the encryption), it 
           won't be included in the encrypted section of the block. However, it may still be included later in the 
           plaintext section if it's valid, although this could potentially expose it to frontrunning.`}
           </AccordionItem>
 
-          <AccordionItem key="9" aria-label="what" title="Can I opt-out of using this encryption service?">
+          <AccordionItem
+            key="9"
+            aria-label="what"
+            title="Can I opt-out of using this encryption service?"
+          >
             {`Yes, using the encrypted transaction service is entirely opt-in. You can choose to send transactions 
           in the usual plaintext format if you prefer not to use encryption.`}
           </AccordionItem>
@@ -99,7 +117,11 @@ export const FAQAccordion = () => {
           offline could potentially compromise transaction security.`}
           </AccordionItem>
 
-          <AccordionItem key="11" aria-label="what" title="How do I start using encrypted transactions on the Opt-in Shutterized Gnosis Chain?">
+          <AccordionItem
+            key="11"
+            aria-label="what"
+            title="How do I start using encrypted transactions on the Opt-in Shutterized Gnosis Chain?"
+          >
             {`To use encrypted transactions, you'll need to use this app and a compatible wallet that supports 
           signing transaction without broadcasting it (such as Brave Wallet).`}
           </AccordionItem>

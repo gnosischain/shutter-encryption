@@ -1,14 +1,8 @@
-import {
-  hexToBytes,
-  keccak256,
-  bytesToBigInt,
-  bytesToHex,
-  numberToBytes,
-} from "viem";
-import pkg from "lodash";
+import { hexToBytes, keccak256, bytesToBigInt, bytesToHex, numberToBytes } from 'viem';
+import pkg from 'lodash';
 const { zip } = pkg;
 
-import { Blst, P1, P2, PT } from "./blst.hpp.ts";
+import { Blst, P1, P2, PT } from './blst.hpp.ts';
 
 declare global {
   interface Window {
@@ -17,9 +11,8 @@ declare global {
 }
 
 const blsSubgroupOrderBytes = [
-  0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09,
-  0xa1, 0xd8, 0x05, 0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff,
-  0xff, 0xff, 0x00, 0x00, 0x00, 0x01,
+  0x73, 0xed, 0xa7, 0x53, 0x29, 0x9d, 0x7d, 0x48, 0x33, 0x39, 0xd8, 0x08, 0x09, 0xa1, 0xd8, 0x05,
+  0x53, 0xbd, 0xa4, 0x02, 0xff, 0xfe, 0x5b, 0xfe, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x01,
 ];
 const blsSubgroupOrder = bytesToBigInt(Uint8Array.from(blsSubgroupOrderBytes));
 
@@ -27,7 +20,7 @@ export async function encryptData(
   msgHex: `0x${string}`,
   identityPreimageHex: `0x${string}`,
   eonKeyHex: `0x${string}`,
-  sigmaHex: `0x${string}`
+  sigmaHex: `0x${string}`,
 ) {
   const identity = await computeIdentityP1(identityPreimageHex);
   const eonKey = await computeEonKeyP2(eonKeyHex);
@@ -37,15 +30,13 @@ export async function encryptData(
 }
 
 export async function computeIdentityP1(preimage: `0x${string}`): Promise<P1> {
-  const preimageBytes = hexToBytes(
-    ("0x1" + preimage.slice(2)) as `0x${string}`
-  );
+  const preimageBytes = hexToBytes(('0x1' + preimage.slice(2)) as `0x${string}`);
 
   const blst = window.blst;
   const identity = new blst.P1().hash_to(
     preimageBytes,
-    "SHUTTER_V01_BLS12381G1_XMD:SHA-256_SSWU_RO_",
-    null
+    'SHUTTER_V01_BLS12381G1_XMD:SHA-256_SSWU_RO_',
+    null,
   );
 
   return identity;
@@ -57,18 +48,13 @@ async function computeEonKeyP2(eonKeyHex: `0x${string}`): Promise<P2> {
   return eonKey;
 }
 
-async function encrypt(
-  msgHex: `0x${string}`,
-  identity: P1,
-  eonKey: P2,
-  sigmaHex: `0x${string}`
-) {
+async function encrypt(msgHex: `0x${string}`, identity: P1, eonKey: P2, sigmaHex: `0x${string}`) {
   const r = computeR(sigmaHex.slice(2), msgHex.slice(2));
   const c1 = computeC1(r);
   const c2 = await computeC2(sigmaHex, r, identity, eonKey);
   const c3 = computeC3(
     padAndSplit(hexToBytes(msgHex as `0x${string}`)),
-    hexToBytes(sigmaHex as `0x${string}`)
+    hexToBytes(sigmaHex as `0x${string}`),
   );
 
   return {
@@ -111,12 +97,7 @@ function computeC1(r: bigint) {
   return c1;
 }
 
-async function computeC2(
-  sigmaHex: string,
-  r: bigint,
-  identity: P1,
-  eonKey: P2
-): Promise<any> {
+async function computeC2(sigmaHex: string, r: bigint, identity: P1, eonKey: P2): Promise<any> {
   const blst = window.blst;
 
   const p: PT = new blst.PT(identity, eonKey);
@@ -126,15 +107,12 @@ async function computeC2(
   return result;
 }
 
-function computeC3(
-  messageBlocks: Uint8Array[],
-  sigma: Uint8Array
-): Uint8Array[] {
+function computeC3(messageBlocks: Uint8Array[], sigma: Uint8Array): Uint8Array[] {
   const keys = computeBlockKeys(sigma, messageBlocks.length);
 
   return zip(keys, messageBlocks).map(([key, block]) => {
     if (key === undefined || block === undefined) {
-      throw new Error("Key or block is undefined");
+      throw new Error('Key or block is undefined');
     }
     return xorBlocks(key, block);
   });
@@ -146,12 +124,12 @@ function hash2(p: PT): Uint8Array {
   const result = new Uint8Array(finalExp.length + 1);
   result[0] = 0x2;
   result.set(finalExp, 1);
-  return keccak256(result, "bytes");
+  return keccak256(result, 'bytes');
 }
 
 function hash3(bytesHex: string): bigint {
-  const preimage = hexToBytes(("0x3" + bytesHex) as `0x${string}`);
-  const hash = keccak256(preimage, "bytes");
+  const preimage = hexToBytes(('0x3' + bytesHex) as `0x${string}`);
+  const hash = keccak256(preimage, 'bytes');
   const bigIntHash = bytesToBigInt(hash);
   const result = bigIntHash % blsSubgroupOrder;
   return result;
@@ -161,14 +139,14 @@ function hash4(bytes: Uint8Array): Uint8Array {
   const preimage = new Uint8Array(bytes.length + 1);
   preimage[0] = 0x4;
   preimage.set(bytes, 1);
-  const hash = keccak256(preimage, "bytes");
+  const hash = keccak256(preimage, 'bytes');
   return hash;
 }
 
 //======================================
 function xorBlocks(x: Uint8Array, y: Uint8Array): Uint8Array {
   if (x.length !== y.length) {
-    throw new Error("Both byte arrays must be of the same length.");
+    throw new Error('Both byte arrays must be of the same length.');
   }
 
   const result = new Uint8Array(x.length);

@@ -4,16 +4,20 @@ import { useLazyQuery } from '@apollo/client';
 import { GET_UPDATES } from './ValidatorRegistryQL';
 
 export interface ValidatorRegistryLog {
-  message: string,
-  signature: string,
-  blockNumber: string,
+  message: string;
+  signature: string;
+  blockNumber: string;
 }
 
 const SUB_GRAPH_MAX_QUERY_LOGS = 1000;
 
 // query
 const LOGS_QUERY_KEY = 'logs';
-export const useGetValidatorRegistryLogs = (chainId: number, lastBlockNumber: number, enabled: boolean) => {
+export const useGetValidatorRegistryLogs = (
+  chainId: number,
+  lastBlockNumber: number,
+  enabled: boolean,
+) => {
   const [getUpdates] = useLazyQuery(GET_UPDATES);
 
   return useQuery({
@@ -24,9 +28,13 @@ export const useGetValidatorRegistryLogs = (chainId: number, lastBlockNumber: nu
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
-          const blockNumber = allLogs.length ? allLogs[allLogs.length - 1].blockNumber : lastBlockNumber;
+          const blockNumber = allLogs.length
+            ? allLogs[allLogs.length - 1].blockNumber
+            : lastBlockNumber;
 
-          const response = await getUpdates({ variables: { first: SUB_GRAPH_MAX_QUERY_LOGS, lastBlockNumber: Number(blockNumber) }});
+          const response = await getUpdates({
+            variables: { first: SUB_GRAPH_MAX_QUERY_LOGS, lastBlockNumber: Number(blockNumber) },
+          });
 
           const logs = response.data?.updateds;
 

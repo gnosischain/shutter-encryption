@@ -23,9 +23,13 @@ export const Connect = () => {
 
   return (
     <div className="flex flex-row items-center">
-      {tip && <Chip size="sm" color="danger">{tip}</Chip>}
+      {tip && (
+        <Chip size="sm" color="danger">
+          {tip}
+        </Chip>
+      )}
 
       <w3m-button balance="show" size="sm" />
     </div>
   );
-}
+};

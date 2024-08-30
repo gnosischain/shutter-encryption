@@ -27,11 +27,11 @@ export const modal: Web3Modal = createWeb3Modal({
   featuredWalletIds: [BRAWE_WALLET_ID],
   includeWalletIds: [BRAWE_WALLET_ID],
   themeVariables: {
-    '--w3m-accent': '#f37e4b'
-  }
+    '--w3m-accent': '#f37e4b',
+  },
 });
 
-export function Web3ModalProvider({ children }: { children: React.ReactNode; }) {
+export function Web3ModalProvider({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

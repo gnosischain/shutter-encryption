@@ -12,18 +12,23 @@ const SLOTS_PER_EPOCH = 16;
 // const EPOCH_DURATION = SLOT_TIME * SLOTS_PER_EPOCH;
 
 const getEpoch = (genesisTime: number) => {
-  return Math.floor(((Date.now() / 1000) - genesisTime) / SLOT_TIME / SLOTS_PER_EPOCH);
-}
+  return Math.floor((Date.now() / 1000 - genesisTime) / SLOT_TIME / SLOTS_PER_EPOCH);
+};
 
 const getSlot = (genesisTime: number) => {
-  return Math.floor(((Date.now() / 1000) - genesisTime) / SLOT_TIME);
-}
+  return Math.floor((Date.now() / 1000 - genesisTime) / SLOT_TIME);
+};
 
-const getLoadingLabel = ({ isValidatorsLoading, isProposersLoading, isWaiting, timeDifference }: {
-  isValidatorsLoading: boolean,
-  isProposersLoading: boolean,
-  isWaiting: boolean,
-  timeDifference: number,
+const getLoadingLabel = ({
+  isValidatorsLoading,
+  isProposersLoading,
+  isWaiting,
+  timeDifference,
+}: {
+  isValidatorsLoading: boolean;
+  isProposersLoading: boolean;
+  isWaiting: boolean;
+  timeDifference: number;
 }) => {
   if (isValidatorsLoading) {
     return 'Fetching shutter validators...';
@@ -36,7 +41,7 @@ const getLoadingLabel = ({ isValidatorsLoading, isProposersLoading, isWaiting, t
   }
 
   return `Next Shutter transactions will be included in ~${timeDifference} seconds`;
-}
+};
 
 export const ShutterTimer = () => {
   const chainId = useChainId();
@@ -47,9 +52,13 @@ export const ShutterTimer = () => {
   // waiting for next epoch
   const [isWaiting, setIsWaiting] = useState(false);
 
-  const { validatorIndexes: shutteredValidatorIndexes, isLoading: isValidatorsLoading } = useGetShutterValidatorIndexes(chainId);
+  const { validatorIndexes: shutteredValidatorIndexes, isLoading: isValidatorsLoading } =
+    useGetShutterValidatorIndexes(chainId);
 
-  const { data: dutiesProposer, isLoading: isProposersLoading } = useFetchDutiesProposer(chain.gbcUrl, currentEpoch);
+  const { data: dutiesProposer, isLoading: isProposersLoading } = useFetchDutiesProposer(
+    chain.gbcUrl,
+    currentEpoch,
+  );
 
   const matches = useMemo(() => {
     if (!shutteredValidatorIndexes || !dutiesProposer) return;
@@ -108,22 +117,23 @@ export const ShutterTimer = () => {
           isWaiting,
           timeDifference,
         })}
-        color='danger'
-        placement='left'>
-      {isValidatorsLoading || isProposersLoading || isWaiting ? (
-        <Spinner className="my-4" />
-      ) : (
-        <CircularProgress
-          className="my-4"
-          aria-label="Loading..."
-          size="lg"
-          value={timeDifference}
-          formatOptions={{ style: "unit", unit: "second" }}
-          color="warning"
-          showValueLabel={true}
-        />
-      )}
+        color="danger"
+        placement="left"
+      >
+        {isValidatorsLoading || isProposersLoading || isWaiting ? (
+          <Spinner className="my-4" />
+        ) : (
+          <CircularProgress
+            className="my-4"
+            aria-label="Loading..."
+            size="lg"
+            value={timeDifference}
+            formatOptions={{ style: 'unit', unit: 'second' }}
+            color="warning"
+            showValueLabel={true}
+          />
+        )}
       </Tooltip>
     </div>
-  )
+  );
 };

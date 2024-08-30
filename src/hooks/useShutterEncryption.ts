@@ -1,18 +1,12 @@
-import { useCallback, useMemo } from "react";
-import {
-  useReadContract,
-  useChainId,
-  useBlockNumber,
-  useAccount,
-  useWriteContract,
-} from "wagmi";
-import { type SignTransactionReturnType, type Hex, parseEther } from "viem";
+import { useCallback, useMemo } from 'react';
+import { useReadContract, useChainId, useBlockNumber, useAccount, useWriteContract } from 'wagmi';
+import { type SignTransactionReturnType, type Hex, parseEther } from 'viem';
 
-import keyBroadcastABI from "@/abis/keyBroadcastABI";
-import keyperSetManagerABI from "@/abis/keyperSetManagerABI";
-import sequencerABI from "@/abis/sequencerABI";
-import { CHAINS_MAP } from "@/constants/chains";
-import { encryptData } from "@/services/shutter/encryptDataBlst";
+import keyBroadcastABI from '@/abis/keyBroadcastABI';
+import keyperSetManagerABI from '@/abis/keyperSetManagerABI';
+import sequencerABI from '@/abis/sequencerABI';
+import { CHAINS_MAP } from '@/constants/chains';
+import { encryptData } from '@/services/shutter/encryptDataBlst';
 
 const tKeyperSetChangeLookAhead = 4;
 
@@ -20,9 +14,7 @@ function randomBytes(size: number) {
   const array = new Uint8Array(size);
   window.crypto.getRandomValues(array);
 
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join(
-    ""
-  );
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 export const useShutterEncryption = () => {
@@ -35,7 +27,7 @@ export const useShutterEncryption = () => {
   const { data: eon, ...eonRest } = useReadContract({
     address: chain.contracts.keyperSetManager.address,
     abi: keyperSetManagerABI,
-    functionName: "getKeyperSetIndexByBlock",
+    functionName: 'getKeyperSetIndexByBlock',
     // @ts-expect-error - disabled query if address is not defined
     args: [Number(blockNumber) + tKeyperSetChangeLookAhead],
     query: {
@@ -46,7 +38,7 @@ export const useShutterEncryption = () => {
   const { data: eonKeyBytes, ...eonKeyBytesRest } = useReadContract({
     address: chain.contracts.keyBroadcast.address,
     abi: keyBroadcastABI,
-    functionName: "getEonKey",
+    functionName: 'getEonKey',
     // @ts-expect-error - disabled query if eon is not defined
     args: [eon],
     query: {
@@ -59,9 +51,7 @@ export const useShutterEncryption = () => {
       if (!eonKeyBytes) return;
 
       const randomHex = randomBytes(12);
-      const identityPrefixHex = (address +
-        randomHex +
-        address?.slice(2)) as Hex;
+      const identityPrefixHex = (address + randomHex + address?.slice(2)) as Hex;
 
       const sigmaHex = (address + randomHex) as Hex;
 
@@ -73,16 +63,11 @@ export const useShutterEncryption = () => {
         sigmaHex,
       });
 
-      const encryptedTx = await encryptData(
-        signedTx,
-        identityPrefixHex,
-        eonKeyBytes,
-        sigmaHex
-      );
+      const encryptedTx = await encryptData(signedTx, identityPrefixHex, eonKeyBytes, sigmaHex);
 
       return { identityPrefixHex: sigmaHex, encryptedTx };
     },
-    [eonKeyBytes, address]
+    [eonKeyBytes, address],
   );
 
   const submitTransactionToSequencer = useCallback(
@@ -94,13 +79,13 @@ export const useShutterEncryption = () => {
       return await writeContractAsync({
         address: chain.contracts.sequencer.address,
         abi: sequencerABI,
-        functionName: "submitEncryptedTransaction",
+        functionName: 'submitEncryptedTransaction',
         args: [eon, identityPrefixHex, encryptedTx, 210000],
-        value: parseEther("210000", "gwei"),
+        value: parseEther('210000', 'gwei'),
         gasPrice: 210000n,
       });
     },
-    [chain, eon]
+    [chain, eon],
   );
 
   return {

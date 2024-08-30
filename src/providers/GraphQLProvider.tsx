@@ -21,9 +21,5 @@ export const GraphQLProvider = ({ children }: { children: any }) => {
     });
   }, [chainId]);
 
-  return (
-    <ApolloProvider client={client}>
-      {children}
-    </ApolloProvider>
-  )
-}
+  return <ApolloProvider client={client}>{children}</ApolloProvider>;
+};
