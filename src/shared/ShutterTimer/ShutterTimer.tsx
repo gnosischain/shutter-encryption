@@ -62,6 +62,11 @@ export const ShutterTimer = () => {
   // console.log({ shutteredValidatorIndexes, dutiesProposer, currentEpoch, matches });
 
   useEffect(() => {
+    setCurrentEpoch(getEpoch(chain.genesisTime));
+    setIsWaiting(false);
+  }, [chain]);
+
+  useEffect(() => {
     if (!dutiesProposer || !matches) return;
 
     const interval = setInterval(() => {
