@@ -6,11 +6,11 @@ import { FAQAccordion } from './FAQAccordion';
 export const MainPage = () => {
   return (
     <div className="flex items-center w-full flex-col text-black bg-secondary">
-      <FormsWrapper/>
-      
+      <FormsWrapper />
+
       <ShutterTimer />
 
-      <FAQAccordion/>
+      <FAQAccordion />
     </div>
   );
 };

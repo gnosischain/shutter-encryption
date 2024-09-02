@@ -22,10 +22,14 @@ export const Connect = () => {
   }, [address, connector]);
 
   return (
-    <div className="flex flex-row items-center">
-      {tip && <Chip size="sm" color="danger">{tip}</Chip>}
-
+    <div className="flex flex-col items-center">
       <w3m-button balance="show" size="sm" />
+
+      {tip && (
+        <Chip className="mr-1 scale-75" size="sm" color="warning">
+          {tip}
+        </Chip>
+      )}
     </div>
   );
-}
+};
