@@ -1,4 +1,3 @@
-
 export const mapChainToOption = (chainData: any) => {
   return {
     ...chainData,
@@ -6,7 +5,7 @@ export const mapChainToOption = (chainData: any) => {
     label: chainData.name,
     value: String(chainData.id),
     avatar: chainData.img,
-  }
+  };
 };
 
 export const mapChainsToOptions = (chains: any) => chains.map(mapChainToOption);

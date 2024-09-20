@@ -4,841 +4,974 @@
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 const BLST_ERROR_str = [
-    "BLST_ERROR: success",
-    "BLST_ERROR: bad point encoding",
-    "BLST_ERROR: point is not on curve",
-    "BLST_ERROR: point is not in group",
-    "BLST_ERROR: context type mismatch",
-    "BLST_ERROR: verify failed",
-    "BLST_ERROR: public key is infinite",
-    "BLST_ERROR: bad scalar",
+  'BLST_ERROR: success',
+  'BLST_ERROR: bad point encoding',
+  'BLST_ERROR: point is not on curve',
+  'BLST_ERROR: point is not in group',
+  'BLST_ERROR: context type mismatch',
+  'BLST_ERROR: verify failed',
+  'BLST_ERROR: public key is infinite',
+  'BLST_ERROR: bad scalar',
 ];
 
-function unsupported(type, extra)
-{   if (typeof extra === 'undefined')
-        return `${type ? type.constructor.name : 'none'}: unsupported type`;
-    else
-        return `${type ? type.constructor.name : 'none'}/${extra ? extra.constructor.name : 'none'}: unsupported types or combination thereof`;
+function unsupported(type, extra) {
+  if (typeof extra === 'undefined')
+    return `${type ? type.constructor.name : 'none'}: unsupported type`;
+  else
+    return `${type ? type.constructor.name : 'none'}/${extra ? extra.constructor.name : 'none'}: unsupported types or combination thereof`;
 }
 
-function ensureAny(value)
-{   if (value === null)
-        return [0, 0];
+function ensureAny(value) {
+  if (value === null) return [0, 0];
 
-    switch (value.constructor) {
-        case String:
-            return [ensureString(value), lengthBytesUTF8(value)];
-        case ArrayBuffer:
-            return [ensureInt8(new Uint8Array(value)), value.byteLength];
-        case BigInt:
-            if (value < 0)
-                throw new Error("expecting unsigned BigInt value");
-            var temp = [];
-            while (value != 0) {
-                temp.push(Number(value & 255n));
-                value >>= 8n;
-            }
-            return [ensureInt8(temp), temp.length];
-        case Uint8Array: case Buffer:
-            return [ensureInt8(value), value.length];
-        default:
-            throw new Error(unsupported(value));
-    }
+  switch (value.constructor) {
+    case String:
+      return [ensureString(value), lengthBytesUTF8(value)];
+    case ArrayBuffer:
+      return [ensureInt8(new Uint8Array(value)), value.byteLength];
+    case BigInt:
+      if (value < 0) throw new Error('expecting unsigned BigInt value');
+      var temp = [];
+      while (value != 0) {
+        temp.push(Number(value & 255n));
+        value >>= 8n;
+      }
+      return [ensureInt8(temp), temp.length];
+    case Uint8Array:
+    case Buffer:
+      return [ensureInt8(value), value.length];
+    default:
+      throw new Error(unsupported(value));
+  }
 }
 
-(function() {
-    function setupConsts() {
-        var i = 0;
-        Module['BLST_SUCCESS'] = i++;
-        Module['BLST_BAD_ENCODING'] = i++;
-        Module['BLST_POINT_NOT_ON_CURVE'] = i++;
-        Module['BLST_POINT_NOT_IN_GROUP'] = i++;
-        Module['BLST_AGGR_TYPE_MISMATCH'] = i++;
-        Module['BLST_VERIFY_FAIL'] = i++;
-        Module['BLST_PK_IS_INFINITY'] = i++;
-        Module['BLST_BAD_SCALAR'] = i++;
-        Module['BLS12_381_G1'] = wrapPointer(_const_G1(), P1_Affine);
-        Module['BLS12_381_G2'] = wrapPointer(_const_G2(), P2_Affine);
-        Module['BLS12_381_NEG_G1'] = wrapPointer(_const_NEG_G1(), P1_Affine);
-        Module['BLS12_381_NEG_G2'] = wrapPointer(_const_NEG_G2(), P2_Affine);
-    }
-    if (runtimeInitialized) setupConsts();
-    else addOnInit(setupConsts);
+(function () {
+  function setupConsts() {
+    var i = 0;
+    Module['BLST_SUCCESS'] = i++;
+    Module['BLST_BAD_ENCODING'] = i++;
+    Module['BLST_POINT_NOT_ON_CURVE'] = i++;
+    Module['BLST_POINT_NOT_IN_GROUP'] = i++;
+    Module['BLST_AGGR_TYPE_MISMATCH'] = i++;
+    Module['BLST_VERIFY_FAIL'] = i++;
+    Module['BLST_PK_IS_INFINITY'] = i++;
+    Module['BLST_BAD_SCALAR'] = i++;
+    Module['BLS12_381_G1'] = wrapPointer(_const_G1(), P1_Affine);
+    Module['BLS12_381_G2'] = wrapPointer(_const_G2(), P2_Affine);
+    Module['BLS12_381_NEG_G1'] = wrapPointer(_const_NEG_G1(), P1_Affine);
+    Module['BLS12_381_NEG_G2'] = wrapPointer(_const_NEG_G2(), P2_Affine);
+  }
+  if (runtimeInitialized) setupConsts();
+  else addOnInit(setupConsts);
 })();
 
 /** @this{Object} */
-function SecretKey()
-{   this.ptr = _SecretKey_0();
-    getCache(SecretKey)[this.ptr] = this;
+function SecretKey() {
+  this.ptr = _SecretKey_0();
+  getCache(SecretKey)[this.ptr] = this;
 }
 SecretKey.prototype = Object.create(WrapperObject.prototype);
 SecretKey.prototype.constructor = SecretKey;
 SecretKey.prototype.__class__ = SecretKey;
 SecretKey.__cache__ = {};
 Module['SecretKey'] = SecretKey;
-SecretKey.prototype['__destroy__'] = SecretKey.prototype.__destroy__ = /** @this{Object} */
-function()
-{   _SecretKey__destroy__0(this.ptr); this.ptr = 0;  };;
+SecretKey.prototype['__destroy__'] = SecretKey.prototype.__destroy__ =
+  /** @this{Object} */
+  function () {
+    _SecretKey__destroy__0(this.ptr);
+    this.ptr = 0;
+  };
 
-SecretKey.prototype['keygen'] = SecretKey.prototype.keygen = /** @this{Object} */
-function(IKM, info)
-{   ensureCache.prepare();
+SecretKey.prototype['keygen'] = SecretKey.prototype.keygen =
+  /** @this{Object} */
+  function (IKM, info) {
+    ensureCache.prepare();
     const [_IKM, IKM_len] = ensureAny(IKM);
-    if (IKM_len < 32)
-        throw new Error("BLST_ERROR: bad scalar");
+    if (IKM_len < 32) throw new Error('BLST_ERROR: bad scalar');
     info = ensureString(info);
     _SecretKey_keygen_3(this.ptr, _IKM, IKM_len, info);
     HEAP8.fill(0, _IKM, _IKM + IKM_len);
-};;
+  };
 
-SecretKey.prototype['derive_master_eip2333'] = SecretKey.prototype.derive_master_eip2333 = /** @this{Object} */
-function(IKM)
-{   ensureCache.prepare();
+SecretKey.prototype['derive_master_eip2333'] = SecretKey.prototype.derive_master_eip2333 =
+  /** @this{Object} */
+  function (IKM) {
+    ensureCache.prepare();
     const [_IKM, IKM_len] = ensureAny(IKM);
-    if (IKM_len < 32)
-        throw new Error("BLST_ERROR: bad scalar");
+    if (IKM_len < 32) throw new Error('BLST_ERROR: bad scalar');
     _SecretKey_derive_master_eip2333_2(this.ptr, _IKM, IKM_len);
     HEAP8.fill(0, _IKM, _IKM + IKM_len);
-};;
+  };
 
-SecretKey.prototype['derive_child_eip2333'] = SecretKey.prototype.derive_child_eip2333 = /** @this{Object} */
-function(sk, child_index)
-{   if (!(sk instanceof SecretKey))
-        throw new Error(unsupported(sk));
+SecretKey.prototype['derive_child_eip2333'] = SecretKey.prototype.derive_child_eip2333 =
+  /** @this{Object} */
+  function (sk, child_index) {
+    if (!(sk instanceof SecretKey)) throw new Error(unsupported(sk));
     _SecretKey_derive_child_eip2333_2(this.ptr, sk.ptr, child_index);
-};;
+  };
 
-SecretKey.prototype['from_bendian'] = SecretKey.prototype.from_bendian = /** @this{Object} */
-function(sk)
-{   if (!(sk instanceof Uint8Array) || sk.length != 32)
-        throw new Error(unsupported(sk));
+SecretKey.prototype['from_bendian'] = SecretKey.prototype.from_bendian =
+  /** @this{Object} */
+  function (sk) {
+    if (!(sk instanceof Uint8Array) || sk.length != 32) throw new Error(unsupported(sk));
     ensureCache.prepare();
     sk = ensureInt8(sk);
     _SecretKey_from_bendian_1(this.ptr, sk);
     HEAP8.fill(0, sk, sk + 32);
-};;
+  };
 
-SecretKey.prototype['from_lendian'] = SecretKey.prototype.from_lendian = /** @this{Object} */
-function(sk)
-{   if (!(sk instanceof Uint8Array) || sk.length != 32)
-        throw new Error(unsupported(sk));
+SecretKey.prototype['from_lendian'] = SecretKey.prototype.from_lendian =
+  /** @this{Object} */
+  function (sk) {
+    if (!(sk instanceof Uint8Array) || sk.length != 32) throw new Error(unsupported(sk));
     ensureCache.prepare();
     sk = ensureInt8(sk);
     _SecretKey_from_lendian_1(this.ptr, sk);
     HEAP8.fill(0, sk, sk + 32);
-};;
+  };
 
-SecretKey.prototype['to_bendian'] = SecretKey.prototype.to_bendian = /** @this{Object} */
-function()
-{   var out = _SecretKey_to_bendian_0(this.ptr);
+SecretKey.prototype['to_bendian'] = SecretKey.prototype.to_bendian =
+  /** @this{Object} */
+  function () {
+    var out = _SecretKey_to_bendian_0(this.ptr);
     var ret = new Uint8Array(HEAPU8.subarray(out, out + 32));
     HEAP8.fill(0, out, out + 32);
     return ret;
-};;
+  };
 
-SecretKey.prototype['to_lendian'] = SecretKey.prototype.to_lendian = /** @this{Object} */
-function()
-{   var out = _SecretKey_to_lendian_0(this.ptr);
+SecretKey.prototype['to_lendian'] = SecretKey.prototype.to_lendian =
+  /** @this{Object} */
+  function () {
+    var out = _SecretKey_to_lendian_0(this.ptr);
     var ret = new Uint8Array(HEAPU8.subarray(out, out + 32));
     HEAP8.fill(0, out, out + 32);
     return ret;
-};;
+  };
 
 /** @this{Object} */
-function Scalar(scalar, DST)
-{   if (typeof scalar === 'undefined' || scalar === null) {
-        this.ptr = _Scalar_0();
+function Scalar(scalar, DST) {
+  if (typeof scalar === 'undefined' || scalar === null) {
+    this.ptr = _Scalar_0();
+  } else {
+    ensureCache.prepare();
+    const [_scalar, len] = ensureAny(scalar);
+    if (typeof DST === 'string' || DST === null) {
+      DST = ensureString(DST);
+      this.ptr = _Scalar_3(_scalar, len, DST);
     } else {
-        ensureCache.prepare();
-        const [ _scalar, len] = ensureAny(scalar);
-        if (typeof DST === 'string' || DST === null) {
-            DST = ensureString(DST);
-            this.ptr = _Scalar_3(_scalar, len, DST);
-        } else {
-            this.ptr = _Scalar_2(_scalar, len*8);
-        }
+      this.ptr = _Scalar_2(_scalar, len * 8);
     }
-    getCache(Scalar)[this.ptr] = this;
+  }
+  getCache(Scalar)[this.ptr] = this;
 }
 Scalar.prototype = Object.create(WrapperObject.prototype);
 Scalar.prototype.constructor = Scalar;
 Scalar.prototype.__class__ = Scalar;
 Scalar.__cache__ = {};
 Module['Scalar'] = Scalar;
-Scalar.prototype['__destroy__'] = Scalar.prototype.__destroy__ = /** @this{Object} */
-function()
-{   _Scalar__destroy__0(this.ptr); this.ptr = 0;  };;
+Scalar.prototype['__destroy__'] = Scalar.prototype.__destroy__ =
+  /** @this{Object} */
+  function () {
+    _Scalar__destroy__0(this.ptr);
+    this.ptr = 0;
+  };
 
-Scalar.prototype['hash_to'] = Scalar.prototype.hash_to = /** @this{Object} */
-function(msg, DST)
-{   ensureCache.prepare();
-    const [ _msg, msg_len] = ensureAny(msg);
+Scalar.prototype['hash_to'] = Scalar.prototype.hash_to =
+  /** @this{Object} */
+  function (msg, DST) {
+    ensureCache.prepare();
+    const [_msg, msg_len] = ensureAny(msg);
     DST = ensureString(DST);
     _Scalar_hash_to_3(this.ptr, _msg, msg_len, DST);
     return this;
-};;
+  };
 
-Scalar.prototype['dup'] = Scalar.prototype.dup = /** @this{Object} */
-function()
-{   return wrapPointer(_Scalar_dup_0(this.ptr), Scalar);   };;
+Scalar.prototype['dup'] = Scalar.prototype.dup =
+  /** @this{Object} */
+  function () {
+    return wrapPointer(_Scalar_dup_0(this.ptr), Scalar);
+  };
 
-Scalar.prototype['from_bendian'] = Scalar.prototype.from_bendian = /** @this{Object} */
-function(msg)
-{   ensureCache.prepare();
-    const [ _msg, msg_len] = ensureAny(msg);
+Scalar.prototype['from_bendian'] = Scalar.prototype.from_bendian =
+  /** @this{Object} */
+  function (msg) {
+    ensureCache.prepare();
+    const [_msg, msg_len] = ensureAny(msg);
     _Scalar_from_bendian_2(this.ptr, _msg, msg_len);
     return this;
-};;
+  };
 
-Scalar.prototype['from_lendian'] = Scalar.prototype.from_lendian = /** @this{Object} */
-function(msg)
-{   ensureCache.prepare();
-    const [ _msg, msg_len] = ensureAny(msg);
+Scalar.prototype['from_lendian'] = Scalar.prototype.from_lendian =
+  /** @this{Object} */
+  function (msg) {
+    ensureCache.prepare();
+    const [_msg, msg_len] = ensureAny(msg);
     _Scalar_from_lendian_2(this.ptr, _msg, msg_len);
     return this;
-};;
+  };
 
-Scalar.prototype['to_bendian'] = Scalar.prototype.to_bendian = /** @this{Object} */
-function()
-{   var out = _Scalar_to_bendian_0(this.ptr);
+Scalar.prototype['to_bendian'] = Scalar.prototype.to_bendian =
+  /** @this{Object} */
+  function () {
+    var out = _Scalar_to_bendian_0(this.ptr);
     return new Uint8Array(HEAPU8.subarray(out, out + 32));
-};;
+  };
 
-Scalar.prototype['to_lendian'] = Scalar.prototype.to_lendian = /** @this{Object} */
-function()
-{   var out = _Scalar_to_lendian_0(this.ptr);
+Scalar.prototype['to_lendian'] = Scalar.prototype.to_lendian =
+  /** @this{Object} */
+  function () {
+    var out = _Scalar_to_lendian_0(this.ptr);
     return new Uint8Array(HEAPU8.subarray(out, out + 32));
-};;
+  };
 
-Scalar.prototype['add'] = Scalar.prototype.add = /** @this{Object} */
-function(a)
-{   if (!(a instanceof Scalar || a instanceof SecretKey))
-        throw new Error(unsupported(a));
+Scalar.prototype['add'] = Scalar.prototype.add =
+  /** @this{Object} */
+  function (a) {
+    if (!(a instanceof Scalar || a instanceof SecretKey)) throw new Error(unsupported(a));
     _Scalar_add_1(this.ptr, a.ptr);
     return this;
-};;
+  };
 
-Scalar.prototype['sub'] = Scalar.prototype.sub = /** @this{Object} */
-function(a)
-{   if (!(a instanceof Scalar))
-        throw new Error(unsupported(a));
+Scalar.prototype['sub'] = Scalar.prototype.sub =
+  /** @this{Object} */
+  function (a) {
+    if (!(a instanceof Scalar)) throw new Error(unsupported(a));
     _Scalar_sub_1(this.ptr, a.ptr);
     return this;
-};;
+  };
 
-Scalar.prototype['mul'] = Scalar.prototype.mul = /** @this{Object} */
-function(a)
-{   if (!(a instanceof Scalar))
-        throw new Error(unsupported(a));
+Scalar.prototype['mul'] = Scalar.prototype.mul =
+  /** @this{Object} */
+  function (a) {
+    if (!(a instanceof Scalar)) throw new Error(unsupported(a));
     _Scalar_mul_1(this.ptr, a.ptr);
     return this;
-};;
+  };
 
-Scalar.prototype['inverse'] = Scalar.prototype.inverse = /** @this{Object} */
-function()
-{   _Scalar_inverse_0(this.ptr); return this;   };;
+Scalar.prototype['inverse'] = Scalar.prototype.inverse =
+  /** @this{Object} */
+  function () {
+    _Scalar_inverse_0(this.ptr);
+    return this;
+  };
 
 /** @this{Object} */
-function PT(p, q)
-{   if (typeof q === 'undefined' || q === null) {
-        if (p instanceof P1_Affine)
-            this.ptr = _PT_p_affine_1(p.ptr);
-        else if (p instanceof P2_Affine)
-            this.ptr = _PT_q_affine_1(p.ptr);
-        else
-            throw new Error(unsupported(p));
-    } else if (p instanceof P1_Affine && q instanceof P2_Affine) {
-        this.ptr = _PT_pq_affine_2(p.ptr, q.ptr);
-    } else if (p instanceof P2_Affine && q instanceof P1_Affine) {
-        this.ptr = _PT_pq_affine_2(q.ptr, p.ptr);
-    } else if (p instanceof P1 && q instanceof P2) {
-        this.ptr = _PT_pq_2(p.ptr, q.ptr);
-    } else if (p instanceof P2 && q instanceof P1) {
-        this.ptr = _PT_pq_2(q.ptr, p.ptr);
-    } else {
-        throw new Error(unsupported(p, q));
-    }
-    getCache(PT)[this.ptr] = this;
+function PT(p, q) {
+  if (typeof q === 'undefined' || q === null) {
+    if (p instanceof P1_Affine) this.ptr = _PT_p_affine_1(p.ptr);
+    else if (p instanceof P2_Affine) this.ptr = _PT_q_affine_1(p.ptr);
+    else throw new Error(unsupported(p));
+  } else if (p instanceof P1_Affine && q instanceof P2_Affine) {
+    this.ptr = _PT_pq_affine_2(p.ptr, q.ptr);
+  } else if (p instanceof P2_Affine && q instanceof P1_Affine) {
+    this.ptr = _PT_pq_affine_2(q.ptr, p.ptr);
+  } else if (p instanceof P1 && q instanceof P2) {
+    this.ptr = _PT_pq_2(p.ptr, q.ptr);
+  } else if (p instanceof P2 && q instanceof P1) {
+    this.ptr = _PT_pq_2(q.ptr, p.ptr);
+  } else {
+    throw new Error(unsupported(p, q));
+  }
+  getCache(PT)[this.ptr] = this;
 }
 PT.prototype = Object.create(WrapperObject.prototype);
 PT.prototype.constructor = PT;
 PT.prototype.__class__ = PT;
 PT.__cache__ = {};
 Module['PT'] = PT;
-PT.prototype['__destroy__'] = PT.prototype.__destroy__ = /** @this{Object} */
-function()
-{   _PT__destroy__0(this.ptr); this.ptr = 0;  };;
+PT.prototype['__destroy__'] = PT.prototype.__destroy__ =
+  /** @this{Object} */
+  function () {
+    _PT__destroy__0(this.ptr);
+    this.ptr = 0;
+  };
 
-PT.prototype['dup'] = PT.prototype.dup = /** @this{Object} */
-function()
-{   return wrapPointer(_PT_dup_0(this.ptr), PT);   };;
+PT.prototype['dup'] = PT.prototype.dup =
+  /** @this{Object} */
+  function () {
+    return wrapPointer(_PT_dup_0(this.ptr), PT);
+  };
 
-PT.prototype['is_one'] = PT.prototype.is_one = /** @this{Object} */
-function()
-{   return !!(_PT_is_one_0(this.ptr));   };;
+PT.prototype['is_one'] = PT.prototype.is_one =
+  /** @this{Object} */
+  function () {
+    return !!_PT_is_one_0(this.ptr);
+  };
 
-PT.prototype['is_equal'] = PT.prototype.is_equal = /** @this{Object} */
-function(p)
-{   if (p instanceof PT)
-        return !!(_PT_is_equal_1(this.ptr, p.ptr));
+PT.prototype['is_equal'] = PT.prototype.is_equal =
+  /** @this{Object} */
+  function (p) {
+    if (p instanceof PT) return !!_PT_is_equal_1(this.ptr, p.ptr);
     throw new Error(unsupported(p));
-};;
+  };
 
-PT.prototype['sqr'] = PT.prototype.sqr = /** @this{Object} */
-function()
-{   _PT_sqr_0(this.ptr); return this;   };;
-
-PT.prototype['mul'] = PT.prototype.mul = /** @this{Object} */
-function(p)
-{   if (p instanceof PT)
-        _PT_mul_1(this.ptr, p.ptr);
-    else
-        throw new Error(unsupported(p));
+PT.prototype['sqr'] = PT.prototype.sqr =
+  /** @this{Object} */
+  function () {
+    _PT_sqr_0(this.ptr);
     return this;
-};;
+  };
 
-PT.prototype['final_exp'] = PT.prototype.final_exp = /** @this{Object} */
-function()
-{   _PT_final_exp_0(this.ptr); return this;   };;
+PT.prototype['mul'] = PT.prototype.mul =
+  /** @this{Object} */
+  function (p) {
+    if (p instanceof PT) _PT_mul_1(this.ptr, p.ptr);
+    else throw new Error(unsupported(p));
+    return this;
+  };
 
-PT.prototype['in_group'] = PT.prototype.in_group = /** @this{Object} */
-function()
-{   return !!(_PT_in_group_0(this.ptr));   };;
+PT.prototype['final_exp'] = PT.prototype.final_exp =
+  /** @this{Object} */
+  function () {
+    _PT_final_exp_0(this.ptr);
+    return this;
+  };
 
-PT.prototype['to_bendian'] = PT.prototype.to_bendian = /** @this{Object} */
-function()
-{   var out = _PT_to_bendian_0(this.ptr);
-    return new Uint8Array(HEAPU8.subarray(out, out + 48*12));
-};;
+PT.prototype['in_group'] = PT.prototype.in_group =
+  /** @this{Object} */
+  function () {
+    return !!_PT_in_group_0(this.ptr);
+  };
 
-PT['finalverify'] = PT.finalverify =
-function(gt1, gt2)
-{   if (gt1 instanceof PT && gt2 instanceof PT)
-        return !!(_PT_finalverify_2(gt1.ptr, gt2.ptr));
-    throw new Error(unsupported(gt1, gt2));
-};;
+PT.prototype['to_bendian'] = PT.prototype.to_bendian =
+  /** @this{Object} */
+  function () {
+    var out = _PT_to_bendian_0(this.ptr);
+    return new Uint8Array(HEAPU8.subarray(out, out + 48 * 12));
+  };
 
-PT['one'] = PT.one =
-function()
-{   return wrapPointer(_PT_one_0(), PT);   };;
+PT['finalverify'] = PT.finalverify = function (gt1, gt2) {
+  if (gt1 instanceof PT && gt2 instanceof PT) return !!_PT_finalverify_2(gt1.ptr, gt2.ptr);
+  throw new Error(unsupported(gt1, gt2));
+};
+
+PT['one'] = PT.one = function () {
+  return wrapPointer(_PT_one_0(), PT);
+};
 
 /** @this{Object} */
-function Pairing(hash_or_encode, DST)
-{   ensureCache.prepare();
-    DST = ensureString(DST);
-    this.ptr = _Pairing_2(!!hash_or_encode, DST);
-    getCache(SecretKey)[this.ptr] = this;
+function Pairing(hash_or_encode, DST) {
+  ensureCache.prepare();
+  DST = ensureString(DST);
+  this.ptr = _Pairing_2(!!hash_or_encode, DST);
+  getCache(SecretKey)[this.ptr] = this;
 }
 Pairing.prototype = Object.create(WrapperObject.prototype);
 Pairing.prototype.constructor = Pairing;
 Pairing.prototype.__class__ = Pairing;
 Pairing.__cache__ = {};
 Module['Pairing'] = Pairing;
-Pairing.prototype['__destroy__'] = Pairing.prototype.__destroy__ = /** @this{Object} */
-function()
-{   _Pairing__destroy__0(this.ptr); this.ptr = 0;  };;
+Pairing.prototype['__destroy__'] = Pairing.prototype.__destroy__ =
+  /** @this{Object} */
+  function () {
+    _Pairing__destroy__0(this.ptr);
+    this.ptr = 0;
+  };
 
-Pairing.prototype['aggregate'] = Pairing.prototype.aggregate = /** @this{Object} */
-function(pk, sig, msg, aug)
-{   ensureCache.prepare();
+Pairing.prototype['aggregate'] = Pairing.prototype.aggregate =
+  /** @this{Object} */
+  function (pk, sig, msg, aug) {
+    ensureCache.prepare();
     const [_msg, msg_len] = ensureAny(msg);
     const [_aug, aug_len] = ensureAny(aug);
     if (pk instanceof P1_Affine && sig instanceof P2_Affine)
-        return _Pairing_aggregate_pk_in_g1_6(this.ptr, pk.ptr, sig.ptr, _msg, msg_len, _aug, aug_len);
+      return _Pairing_aggregate_pk_in_g1_6(this.ptr, pk.ptr, sig.ptr, _msg, msg_len, _aug, aug_len);
     else if (pk instanceof P2_Affine && sig instanceof P1_Affine)
-        return _Pairing_aggregate_pk_in_g2_6(this.ptr, pk.ptr, sig.ptr, _msg, msg_len, _aug, aug_len);
-    else
-        throw new Error(unsupported(pk, sig));
+      return _Pairing_aggregate_pk_in_g2_6(this.ptr, pk.ptr, sig.ptr, _msg, msg_len, _aug, aug_len);
+    else throw new Error(unsupported(pk, sig));
     return -1;
-};;
+  };
 
-Pairing.prototype['mul_n_aggregate'] = Pairing.prototype.mul_n_aggregate = /** @this{Object} */
-function(pk, sig, scalar, msg, aug)
-{   if (typeof scalar === 'undefined' || scalar === null)
-        throw new Error("missing |scalar| argument");
+Pairing.prototype['mul_n_aggregate'] = Pairing.prototype.mul_n_aggregate =
+  /** @this{Object} */
+  function (pk, sig, scalar, msg, aug) {
+    if (typeof scalar === 'undefined' || scalar === null)
+      throw new Error('missing |scalar| argument');
     ensureCache.prepare();
     const [_scalar, len] = ensureAny(scalar);
     const [_msg, msg_len] = ensureAny(msg);
     const [_aug, aug_len] = ensureAny(aug);
     if (pk instanceof P1_Affine && sig instanceof P2_Affine)
-        return _Pairing_mul_n_aggregate_pk_in_g1_8(this.ptr, pk.ptr, sig.ptr, _scalar, len*8, _msg, msg_len, _aug, aug_len);
+      return _Pairing_mul_n_aggregate_pk_in_g1_8(
+        this.ptr,
+        pk.ptr,
+        sig.ptr,
+        _scalar,
+        len * 8,
+        _msg,
+        msg_len,
+        _aug,
+        aug_len,
+      );
     else if (pk instanceof P2_Affine && sig instanceof P1_Affine)
-        return _Pairing_mul_n_aggregate_pk_in_g2_8(this.ptr, pk.ptr, sig.ptr, _scalar, len*8, _msg, msg_len, _aug, aug_len);
-    else
-        throw new Error(unsupported(pk, sig));
+      return _Pairing_mul_n_aggregate_pk_in_g2_8(
+        this.ptr,
+        pk.ptr,
+        sig.ptr,
+        _scalar,
+        len * 8,
+        _msg,
+        msg_len,
+        _aug,
+        aug_len,
+      );
+    else throw new Error(unsupported(pk, sig));
     return -1;
-};;
+  };
 
-Pairing.prototype['commit'] = Pairing.prototype.commit = /** @this{Object} */
-function()
-{   _Pairing_commit_0(this.ptr);   };;
+Pairing.prototype['commit'] = Pairing.prototype.commit =
+  /** @this{Object} */
+  function () {
+    _Pairing_commit_0(this.ptr);
+  };
 
-Pairing.prototype['asArrayBuffer'] = Pairing.prototype.asArrayBuffer = /** @this{Object} */
-function()
-{   return HEAP8.buffer.slice(this.ptr, this.ptr + _Pairing_sizeof_0());   };;
+Pairing.prototype['asArrayBuffer'] = Pairing.prototype.asArrayBuffer =
+  /** @this{Object} */
+  function () {
+    return HEAP8.buffer.slice(this.ptr, this.ptr + _Pairing_sizeof_0());
+  };
 
-Pairing.prototype['merge'] = Pairing.prototype.merge = /** @this{Object} */
-function(ctx)
-{   if (ctx instanceof Pairing)
-        return _Pairing_merge_1(this.ptr, ctx.ptr);
+Pairing.prototype['merge'] = Pairing.prototype.merge =
+  /** @this{Object} */
+  function (ctx) {
+    if (ctx instanceof Pairing) return _Pairing_merge_1(this.ptr, ctx.ptr);
     else if (ctx instanceof ArrayBuffer && ctx.byteLength == _Pairing_sizeof_0())
-        return _Pairing_merge_1(this.ptr, ensureAny(ctx)[0]);
+      return _Pairing_merge_1(this.ptr, ensureAny(ctx)[0]);
     throw new Error(unsupported(ctx));
-};;
+  };
 
-Pairing.prototype['finalverify'] = Pairing.prototype.finalverify = /** @this{Object} */
-function(sig)
-{   if (typeof sig === 'undefined' || sig === null)
-        return !!(_Pairing_finalverify_1(this.ptr, 0));
-    else if (sig instanceof PT)
-        return !!(_Pairing_finalverify_1(this.ptr, sig.ptr));
-    else
-        throw new Error(unsupported(sig));
-};;
+Pairing.prototype['finalverify'] = Pairing.prototype.finalverify =
+  /** @this{Object} */
+  function (sig) {
+    if (typeof sig === 'undefined' || sig === null) return !!_Pairing_finalverify_1(this.ptr, 0);
+    else if (sig instanceof PT) return !!_Pairing_finalverify_1(this.ptr, sig.ptr);
+    else throw new Error(unsupported(sig));
+  };
 
-Pairing.prototype['raw_aggregate'] = Pairing.prototype.raw_aggregate = /** @this{Object} */
-function(q, p)
-{   if (q instanceof P2_Affine && p instanceof P1_Affine)
-        _Pairing_raw_aggregate_2(this.ptr, q.ptr, p.ptr);
-    else
-        throw new Error(unsupported(q, p));
-};;
+Pairing.prototype['raw_aggregate'] = Pairing.prototype.raw_aggregate =
+  /** @this{Object} */
+  function (q, p) {
+    if (q instanceof P2_Affine && p instanceof P1_Affine)
+      _Pairing_raw_aggregate_2(this.ptr, q.ptr, p.ptr);
+    else throw new Error(unsupported(q, p));
+  };
 
-Pairing.prototype['as_fp12'] = Pairing.prototype.as_fp12 = /** @this{Object} */
-function()
-{   return wrapPointer(_Pairing_as_fp12_0(this.ptr), PT);   };;
-
+Pairing.prototype['as_fp12'] = Pairing.prototype.as_fp12 =
+  /** @this{Object} */
+  function () {
+    return wrapPointer(_Pairing_as_fp12_0(this.ptr), PT);
+  };
 
 /** @this{Object} */
-function P1_Affine(input)
-{   ensureCache.prepare();
-    if (typeof input === 'undefined' || input === null)
-        this.ptr = _P1_Affine_0();
-    else if (input instanceof Uint8Array)
-        this.ptr = _P1_Affine_2(ensureInt8(input), input.length);
-    else if (input instanceof P1)
-        this.ptr = _P1_Affine_1(input.ptr);
-    else
-        throw new Error(unsupported(input));
-    getCache(P1_Affine)[this.ptr] = this;
+function P1_Affine(input) {
+  ensureCache.prepare();
+  if (typeof input === 'undefined' || input === null) this.ptr = _P1_Affine_0();
+  else if (input instanceof Uint8Array) this.ptr = _P1_Affine_2(ensureInt8(input), input.length);
+  else if (input instanceof P1) this.ptr = _P1_Affine_1(input.ptr);
+  else throw new Error(unsupported(input));
+  getCache(P1_Affine)[this.ptr] = this;
 }
 P1_Affine.prototype = Object.create(WrapperObject.prototype);
 P1_Affine.prototype.constructor = P1_Affine;
 P1_Affine.prototype.__class__ = P1_Affine;
 P1_Affine.__cache__ = {};
 Module['P1_Affine'] = P1_Affine;
-P1_Affine.prototype['__destroy__'] = P1_Affine.prototype.__destroy__ = /** @this{Object} */
-function()
-{   _P1_Affine__destroy__0(this.ptr); this.ptr = 0;   };;
+P1_Affine.prototype['__destroy__'] = P1_Affine.prototype.__destroy__ =
+  /** @this{Object} */
+  function () {
+    _P1_Affine__destroy__0(this.ptr);
+    this.ptr = 0;
+  };
 
-P1_Affine.prototype['dup'] = P1_Affine.prototype.dup = /** @this{Object} */
-function()
-{   return wrapPointer(_P1_Affine_dup_0(this.ptr), P1_Affine);   };;
+P1_Affine.prototype['dup'] = P1_Affine.prototype.dup =
+  /** @this{Object} */
+  function () {
+    return wrapPointer(_P1_Affine_dup_0(this.ptr), P1_Affine);
+  };
 
-P1_Affine.prototype['to_jacobian'] = P1_Affine.prototype.to_jacobian = /** @this{Object} */
-function()
-{   return wrapPointer(_P1_Affine_to_jacobian_0(this.ptr), P1);   };;
+P1_Affine.prototype['to_jacobian'] = P1_Affine.prototype.to_jacobian =
+  /** @this{Object} */
+  function () {
+    return wrapPointer(_P1_Affine_to_jacobian_0(this.ptr), P1);
+  };
 
-P1_Affine.prototype['serialize'] = P1_Affine.prototype.serialize = /** @this{Object} */
-function()
-{   var out = _P1_Affine_serialize_0(this.ptr);
-    return new Uint8Array(HEAPU8.subarray(out, out + 96*1));
-};;
+P1_Affine.prototype['serialize'] = P1_Affine.prototype.serialize =
+  /** @this{Object} */
+  function () {
+    var out = _P1_Affine_serialize_0(this.ptr);
+    return new Uint8Array(HEAPU8.subarray(out, out + 96 * 1));
+  };
 
-P1_Affine.prototype['compress'] = P1_Affine.prototype.compress = /** @this{Object} */
-function()
-{   var out = _P1_Affine_compress_0(this.ptr);
-    return new Uint8Array(HEAPU8.subarray(out, out + 48*1));
-};;
+P1_Affine.prototype['compress'] = P1_Affine.prototype.compress =
+  /** @this{Object} */
+  function () {
+    var out = _P1_Affine_compress_0(this.ptr);
+    return new Uint8Array(HEAPU8.subarray(out, out + 48 * 1));
+  };
 
-P1_Affine.prototype['on_curve'] = P1_Affine.prototype.on_curve = /** @this{Object} */
-function()
-{   return !!(_P1_Affine_on_curve_0(this.ptr));   };;
+P1_Affine.prototype['on_curve'] = P1_Affine.prototype.on_curve =
+  /** @this{Object} */
+  function () {
+    return !!_P1_Affine_on_curve_0(this.ptr);
+  };
 
-P1_Affine.prototype['in_group'] = P1_Affine.prototype.in_group = /** @this{Object} */
-function()
-{   return !!(_P1_Affine_in_group_0(this.ptr));   };;
+P1_Affine.prototype['in_group'] = P1_Affine.prototype.in_group =
+  /** @this{Object} */
+  function () {
+    return !!_P1_Affine_in_group_0(this.ptr);
+  };
 
-P1_Affine.prototype['is_inf'] = P1_Affine.prototype.is_inf = /** @this{Object} */
-function()
-{   return !!(_P1_Affine_is_inf_0(this.ptr));   };;
+P1_Affine.prototype['is_inf'] = P1_Affine.prototype.is_inf =
+  /** @this{Object} */
+  function () {
+    return !!_P1_Affine_is_inf_0(this.ptr);
+  };
 
-P1_Affine.prototype['is_equal'] = P1_Affine.prototype.is_equal = /** @this{Object} */
-function(p)
-{   if (p instanceof P1_Affine)
-        return !!(_P1_Affine_is_equal_1(this.ptr, p.ptr));
+P1_Affine.prototype['is_equal'] = P1_Affine.prototype.is_equal =
+  /** @this{Object} */
+  function (p) {
+    if (p instanceof P1_Affine) return !!_P1_Affine_is_equal_1(this.ptr, p.ptr);
     throw new Error(unsupported(p));
-};;
+  };
 
-P1_Affine.prototype['core_verify'] = P1_Affine.prototype.core_verify = /** @this{Object} */
-function(pk, hash_or_encode, msg, DST, aug)
-{   if (!(pk instanceof P2_Affine))
-        throw new Error(unsupported(pk));
+P1_Affine.prototype['core_verify'] = P1_Affine.prototype.core_verify =
+  /** @this{Object} */
+  function (pk, hash_or_encode, msg, DST, aug) {
+    if (!(pk instanceof P2_Affine)) throw new Error(unsupported(pk));
     ensureCache.prepare();
     const [_msg, msg_len] = ensureAny(msg);
     DST = ensureString(DST);
     const [_aug, aug_len] = ensureAny(aug);
-    return _P1_Affine_core_verify_7(this.ptr, pk.ptr, !!hash_or_encode, _msg, msg_len, DST, _aug, aug_len);
-};;
+    return _P1_Affine_core_verify_7(
+      this.ptr,
+      pk.ptr,
+      !!hash_or_encode,
+      _msg,
+      msg_len,
+      DST,
+      _aug,
+      aug_len,
+    );
+  };
 
-P1_Affine['generator'] = P1_Affine.generator =
-function()
-{   return wrapPointer(_P1_Affine_generator_0(), P1_Affine);   };;
+P1_Affine['generator'] = P1_Affine.generator = function () {
+  return wrapPointer(_P1_Affine_generator_0(), P1_Affine);
+};
 
 /** @this{Object} */
-function P1(input)
-{   ensureCache.prepare();
-    if (typeof input === 'undefined' || input === null)
-        this.ptr = _P1_0();
-    else if (input instanceof Uint8Array)
-        this.ptr = _P1_2(ensureInt8(input), input.length);
-    else if (input instanceof P1_Affine)
-        this.ptr = _P1_affine_1(input.ptr);
-    else if (input instanceof SecretKey)
-        this.ptr = _P1_secretkey_1(input.ptr);
-    else
-        throw new Error(unsupported(input));
-    getCache(P1)[this.ptr] = this;
+function P1(input) {
+  ensureCache.prepare();
+  if (typeof input === 'undefined' || input === null) this.ptr = _P1_0();
+  else if (input instanceof Uint8Array) this.ptr = _P1_2(ensureInt8(input), input.length);
+  else if (input instanceof P1_Affine) this.ptr = _P1_affine_1(input.ptr);
+  else if (input instanceof SecretKey) this.ptr = _P1_secretkey_1(input.ptr);
+  else throw new Error(unsupported(input));
+  getCache(P1)[this.ptr] = this;
 }
 P1.prototype = Object.create(WrapperObject.prototype);
 P1.prototype.constructor = P1;
 P1.prototype.__class__ = P1;
 P1.__cache__ = {};
 Module['P1'] = P1;
-P1.prototype['__destroy__'] = P1.prototype.__destroy__ = /** @this{Object} */
-function()
-{   _P1__destroy__0(this.ptr); this.ptr = 0;  };;
+P1.prototype['__destroy__'] = P1.prototype.__destroy__ =
+  /** @this{Object} */
+  function () {
+    _P1__destroy__0(this.ptr);
+    this.ptr = 0;
+  };
 
-P1.prototype['dup'] = P1.prototype.dup = /** @this{Object} */
-function()
-{   return wrapPointer(_P1_dup_0(this.ptr), P1);   };;
+P1.prototype['dup'] = P1.prototype.dup =
+  /** @this{Object} */
+  function () {
+    return wrapPointer(_P1_dup_0(this.ptr), P1);
+  };
 
-P1.prototype['to_affine'] = P1.prototype.to_affine = /** @this{Object} */
-function()
-{   return wrapPointer(_P1_to_affine_0(this.ptr), P1_Affine);   };;
+P1.prototype['to_affine'] = P1.prototype.to_affine =
+  /** @this{Object} */
+  function () {
+    return wrapPointer(_P1_to_affine_0(this.ptr), P1_Affine);
+  };
 
-P1.prototype['serialize'] = P1.prototype.serialize = /** @this{Object} */
-function()
-{   var out = _P1_serialize_0(this.ptr);
-    return new Uint8Array(HEAPU8.subarray(out, out + 96*1));
-};;
+P1.prototype['serialize'] = P1.prototype.serialize =
+  /** @this{Object} */
+  function () {
+    var out = _P1_serialize_0(this.ptr);
+    return new Uint8Array(HEAPU8.subarray(out, out + 96 * 1));
+  };
 
-P1.prototype['compress'] = P1.prototype.compress = /** @this{Object} */
-function()
-{   var out = _P1_compress_0(this.ptr);
-    return new Uint8Array(HEAPU8.subarray(out, out + 48*1));
-};;
+P1.prototype['compress'] = P1.prototype.compress =
+  /** @this{Object} */
+  function () {
+    var out = _P1_compress_0(this.ptr);
+    return new Uint8Array(HEAPU8.subarray(out, out + 48 * 1));
+  };
 
-P1.prototype['on_curve'] = P1.prototype.on_curve = /** @this{Object} */
-function()
-{   return !!(_P1_on_curve_0(this.ptr));   };;
+P1.prototype['on_curve'] = P1.prototype.on_curve =
+  /** @this{Object} */
+  function () {
+    return !!_P1_on_curve_0(this.ptr);
+  };
 
-P1.prototype['in_group'] = P1.prototype.in_group = /** @this{Object} */
-function()
-{   return !!(_P1_in_group_0(this.ptr));   };;
+P1.prototype['in_group'] = P1.prototype.in_group =
+  /** @this{Object} */
+  function () {
+    return !!_P1_in_group_0(this.ptr);
+  };
 
-P1.prototype['is_inf'] = P1.prototype.is_inf = /** @this{Object} */
-function()
-{   return !!(_P1_is_inf_0(this.ptr));   };;
+P1.prototype['is_inf'] = P1.prototype.is_inf =
+  /** @this{Object} */
+  function () {
+    return !!_P1_is_inf_0(this.ptr);
+  };
 
-P1.prototype['is_equal'] = P1.prototype.is_equal = /** @this{Object} */
-function(p)
-{   if (p instanceof P1)
-        return !!(_P1_is_equal_1(this.ptr, p.ptr));
+P1.prototype['is_equal'] = P1.prototype.is_equal =
+  /** @this{Object} */
+  function (p) {
+    if (p instanceof P1) return !!_P1_is_equal_1(this.ptr, p.ptr);
     throw new Error(unsupported(p));
-};;
+  };
 
-P1.prototype['aggregate'] = P1.prototype.aggregate = /** @this{Object} */
-function(p)
-{   if (p instanceof P1_Affine)
-        _P1_aggregate_1(this.ptr, p.ptr);
-    else
-        throw new Error(unsupported(p));
-};;
+P1.prototype['aggregate'] = P1.prototype.aggregate =
+  /** @this{Object} */
+  function (p) {
+    if (p instanceof P1_Affine) _P1_aggregate_1(this.ptr, p.ptr);
+    else throw new Error(unsupported(p));
+  };
 
-P1.prototype['sign_with'] = P1.prototype.sign_with = /** @this{Object} */
-function(sk)
-{   if (sk instanceof SecretKey)
-        _P1_sign_with_1(this.ptr, sk.ptr);
-    else
-        throw new Error(unsupported(sk));
+P1.prototype['sign_with'] = P1.prototype.sign_with =
+  /** @this{Object} */
+  function (sk) {
+    if (sk instanceof SecretKey) _P1_sign_with_1(this.ptr, sk.ptr);
+    else throw new Error(unsupported(sk));
     return this;
-};;
+  };
 
-P1.prototype['hash_to'] = P1.prototype.hash_to = /** @this{Object} */
-function(msg, DST, aug)
-{   ensureCache.prepare();
+P1.prototype['hash_to'] = P1.prototype.hash_to =
+  /** @this{Object} */
+  function (msg, DST, aug) {
+    ensureCache.prepare();
     const [_msg, msg_len] = ensureAny(msg);
     DST = ensureString(DST);
     const [_aug, aug_len] = ensureAny(aug);
     _P1_hash_to_5(this.ptr, _msg, msg_len, DST, _aug, aug_len);
     return this;
-};;
+  };
 
-P1.prototype['encode_to'] = P1.prototype.encode_to = /** @this{Object} */
-function(msg, DST, aug)
-{   ensureCache.prepare();
+P1.prototype['encode_to'] = P1.prototype.encode_to =
+  /** @this{Object} */
+  function (msg, DST, aug) {
+    ensureCache.prepare();
     const [_msg, msg_len] = ensureAny(msg);
     DST = ensureString(DST);
     const [_aug, aug_len] = ensureAny(aug);
     _P1_encode_to_5(this.ptr, _msg, msg_len, DST, _aug, aug_len);
     return this;
-};;
+  };
 
-P1.prototype['mult'] = P1.prototype.mult = /** @this{Object} */
-function(scalar)
-{   if (scalar instanceof Scalar) {
-        _P1_mult_1(this.ptr, scalar.ptr);
+P1.prototype['mult'] = P1.prototype.mult =
+  /** @this{Object} */
+  function (scalar) {
+    if (scalar instanceof Scalar) {
+      _P1_mult_1(this.ptr, scalar.ptr);
     } else if (typeof scalar !== 'string') {
-        ensureCache.prepare();
-        const [_scalar, len] = ensureAny(scalar);
-        _P1_mult_2(this.ptr, _scalar, len*8);
+      ensureCache.prepare();
+      const [_scalar, len] = ensureAny(scalar);
+      _P1_mult_2(this.ptr, _scalar, len * 8);
     } else {
-        throw new Error(unsupported(scalar));
+      throw new Error(unsupported(scalar));
     }
     return this;
-};;
+  };
 
-P1.prototype['cneg'] = P1.prototype.cneg = /** @this{Object} */
-function(flag)
-{   _P1_cneg_1(this.ptr, !!flag); return this;   };;
-P1.prototype['neg'] = P1.prototype.neg = /** @this{Object} */
-function()
-{   _P1_cneg_1(this.ptr, true); return this;   };;
-
-P1.prototype['add'] = P1.prototype.add = /** @this{Object} */
-function(p)
-{   if (p instanceof P1)
-        _P1_add_1(this.ptr, p.ptr);
-    else if (p instanceof P1_Affine)
-        _P1_add_affine_1(this.ptr, p.ptr);
-    else
-        throw new Error(unsupported(p));
+P1.prototype['cneg'] = P1.prototype.cneg =
+  /** @this{Object} */
+  function (flag) {
+    _P1_cneg_1(this.ptr, !!flag);
     return this;
-};;
+  };
+P1.prototype['neg'] = P1.prototype.neg =
+  /** @this{Object} */
+  function () {
+    _P1_cneg_1(this.ptr, true);
+    return this;
+  };
 
-P1.prototype['dbl'] = P1.prototype.dbl = /** @this{Object} */
-function()
-{   _P1_dbl_0(this.ptr); return this;   };;
+P1.prototype['add'] = P1.prototype.add =
+  /** @this{Object} */
+  function (p) {
+    if (p instanceof P1) _P1_add_1(this.ptr, p.ptr);
+    else if (p instanceof P1_Affine) _P1_add_affine_1(this.ptr, p.ptr);
+    else throw new Error(unsupported(p));
+    return this;
+  };
 
-Module['G1'] = P1['generator'] = P1.generator =
-function()
-{   return wrapPointer(_P1_generator_0(), P1);   };;
+P1.prototype['dbl'] = P1.prototype.dbl =
+  /** @this{Object} */
+  function () {
+    _P1_dbl_0(this.ptr);
+    return this;
+  };
 
+Module['G1'] =
+  P1['generator'] =
+  P1.generator =
+    function () {
+      return wrapPointer(_P1_generator_0(), P1);
+    };
 
 /** @this{Object} */
-function P2_Affine(input)
-{   ensureCache.prepare();
-    if (typeof input === 'undefined' || input === null)
-        this.ptr = _P2_Affine_0();
-    else if (input instanceof Uint8Array)
-        this.ptr = _P2_Affine_2(ensureInt8(input), input.length);
-    else if (input instanceof P2)
-        this.ptr = _P2_Affine_1(input.ptr);
-    else
-        throw new Error(unsupported(input));
-    getCache(P2_Affine)[this.ptr] = this;
+function P2_Affine(input) {
+  ensureCache.prepare();
+  if (typeof input === 'undefined' || input === null) this.ptr = _P2_Affine_0();
+  else if (input instanceof Uint8Array) this.ptr = _P2_Affine_2(ensureInt8(input), input.length);
+  else if (input instanceof P2) this.ptr = _P2_Affine_1(input.ptr);
+  else throw new Error(unsupported(input));
+  getCache(P2_Affine)[this.ptr] = this;
 }
 P2_Affine.prototype = Object.create(WrapperObject.prototype);
 P2_Affine.prototype.constructor = P2_Affine;
 P2_Affine.prototype.__class__ = P2_Affine;
 P2_Affine.__cache__ = {};
 Module['P2_Affine'] = P2_Affine;
-P2_Affine.prototype['__destroy__'] = P2_Affine.prototype.__destroy__ = /** @this{Object} */
-function()
-{   _P2_Affine__destroy__0(this.ptr); this.ptr = 0;   };;
+P2_Affine.prototype['__destroy__'] = P2_Affine.prototype.__destroy__ =
+  /** @this{Object} */
+  function () {
+    _P2_Affine__destroy__0(this.ptr);
+    this.ptr = 0;
+  };
 
-P2_Affine.prototype['dup'] = P2_Affine.prototype.dup = /** @this{Object} */
-function()
-{   return wrapPointer(_P2_Affine_dup_0(this.ptr), P2_Affine);   };;
+P2_Affine.prototype['dup'] = P2_Affine.prototype.dup =
+  /** @this{Object} */
+  function () {
+    return wrapPointer(_P2_Affine_dup_0(this.ptr), P2_Affine);
+  };
 
-P2_Affine.prototype['to_jacobian'] = P2_Affine.prototype.to_jacobian = /** @this{Object} */
-function()
-{   return wrapPointer(_P2_Affine_to_jacobian_0(this.ptr), P2);   };;
+P2_Affine.prototype['to_jacobian'] = P2_Affine.prototype.to_jacobian =
+  /** @this{Object} */
+  function () {
+    return wrapPointer(_P2_Affine_to_jacobian_0(this.ptr), P2);
+  };
 
-P2_Affine.prototype['serialize'] = P2_Affine.prototype.serialize = /** @this{Object} */
-function()
-{   var out = _P2_Affine_serialize_0(this.ptr);
-    return new Uint8Array(HEAPU8.subarray(out, out + 96*2));
-};;
+P2_Affine.prototype['serialize'] = P2_Affine.prototype.serialize =
+  /** @this{Object} */
+  function () {
+    var out = _P2_Affine_serialize_0(this.ptr);
+    return new Uint8Array(HEAPU8.subarray(out, out + 96 * 2));
+  };
 
-P2_Affine.prototype['compress'] = P2_Affine.prototype.compress = /** @this{Object} */
-function()
-{   var out = _P2_Affine_compress_0(this.ptr);
-    return new Uint8Array(HEAPU8.subarray(out, out + 48*2));
-};;
+P2_Affine.prototype['compress'] = P2_Affine.prototype.compress =
+  /** @this{Object} */
+  function () {
+    var out = _P2_Affine_compress_0(this.ptr);
+    return new Uint8Array(HEAPU8.subarray(out, out + 48 * 2));
+  };
 
-P2_Affine.prototype['on_curve'] = P2_Affine.prototype.on_curve = /** @this{Object} */
-function()
-{   return !!(_P2_Affine_on_curve_0(this.ptr));   };;
+P2_Affine.prototype['on_curve'] = P2_Affine.prototype.on_curve =
+  /** @this{Object} */
+  function () {
+    return !!_P2_Affine_on_curve_0(this.ptr);
+  };
 
-P2_Affine.prototype['in_group'] = P2_Affine.prototype.in_group = /** @this{Object} */
-function()
-{   return !!(_P2_Affine_in_group_0(this.ptr));   };;
+P2_Affine.prototype['in_group'] = P2_Affine.prototype.in_group =
+  /** @this{Object} */
+  function () {
+    return !!_P2_Affine_in_group_0(this.ptr);
+  };
 
-P2_Affine.prototype['is_inf'] = P2_Affine.prototype.is_inf = /** @this{Object} */
-function()
-{   return !!(_P2_Affine_is_inf_0(this.ptr));   };;
+P2_Affine.prototype['is_inf'] = P2_Affine.prototype.is_inf =
+  /** @this{Object} */
+  function () {
+    return !!_P2_Affine_is_inf_0(this.ptr);
+  };
 
-P2_Affine.prototype['is_equal'] = P2_Affine.prototype.is_equal = /** @this{Object} */
-function(p)
-{   if (p instanceof P2_Affine)
-        return !!(_P2_Affine_is_equal_1(this.ptr, p.ptr));
+P2_Affine.prototype['is_equal'] = P2_Affine.prototype.is_equal =
+  /** @this{Object} */
+  function (p) {
+    if (p instanceof P2_Affine) return !!_P2_Affine_is_equal_1(this.ptr, p.ptr);
     throw new Error(unsupported(p));
-};;
+  };
 
-P2_Affine.prototype['core_verify'] = P2_Affine.prototype.core_verify = /** @this{Object} */
-function(pk, hash_or_encode, msg, DST, aug)
-{   if (!(pk instanceof P1_Affine))
-        throw new Error(unsupported(pk));
+P2_Affine.prototype['core_verify'] = P2_Affine.prototype.core_verify =
+  /** @this{Object} */
+  function (pk, hash_or_encode, msg, DST, aug) {
+    if (!(pk instanceof P1_Affine)) throw new Error(unsupported(pk));
     ensureCache.prepare();
     const [_msg, msg_len] = ensureAny(msg);
     DST = ensureString(DST);
     const [_aug, aug_len] = ensureAny(aug);
-    return _P2_Affine_core_verify_7(this.ptr, pk.ptr, !!hash_or_encode, _msg, msg_len, DST, _aug, aug_len);
-};;
+    return _P2_Affine_core_verify_7(
+      this.ptr,
+      pk.ptr,
+      !!hash_or_encode,
+      _msg,
+      msg_len,
+      DST,
+      _aug,
+      aug_len,
+    );
+  };
 
-P2_Affine['generator'] = P2_Affine.generator =
-function()
-{   return wrapPointer(_P2_Affine_generator_0(), P2_Affine);   };;
+P2_Affine['generator'] = P2_Affine.generator = function () {
+  return wrapPointer(_P2_Affine_generator_0(), P2_Affine);
+};
 
 /** @this{Object} */
-function P2(input)
-{   ensureCache.prepare();
-    if (typeof input === 'undefined' || input === null)
-        this.ptr = _P2_0();
-    else if (input instanceof Uint8Array)
-        this.ptr = _P2_2(ensureInt8(input), input.length);
-    else if (input instanceof P2_Affine)
-        this.ptr = _P2_affine_1(input.ptr);
-    else if (input instanceof SecretKey)
-        this.ptr = _P2_secretkey_1(input.ptr);
-    else
-        throw new Error(unsupported(input));
-    getCache(P2)[this.ptr] = this;
+function P2(input) {
+  ensureCache.prepare();
+  if (typeof input === 'undefined' || input === null) this.ptr = _P2_0();
+  else if (input instanceof Uint8Array) this.ptr = _P2_2(ensureInt8(input), input.length);
+  else if (input instanceof P2_Affine) this.ptr = _P2_affine_1(input.ptr);
+  else if (input instanceof SecretKey) this.ptr = _P2_secretkey_1(input.ptr);
+  else throw new Error(unsupported(input));
+  getCache(P2)[this.ptr] = this;
 }
 P2.prototype = Object.create(WrapperObject.prototype);
 P2.prototype.constructor = P2;
 P2.prototype.__class__ = P2;
 P2.__cache__ = {};
 Module['P2'] = P2;
-P2.prototype['__destroy__'] = P2.prototype.__destroy__ = /** @this{Object} */
-function()
-{   _P2__destroy__0(this.ptr); this.ptr = 0;  };;
+P2.prototype['__destroy__'] = P2.prototype.__destroy__ =
+  /** @this{Object} */
+  function () {
+    _P2__destroy__0(this.ptr);
+    this.ptr = 0;
+  };
 
-P2.prototype['dup'] = P2.prototype.dup = /** @this{Object} */
-function()
-{   return wrapPointer(_P2_dup_0(this.ptr), P2);   };;
+P2.prototype['dup'] = P2.prototype.dup =
+  /** @this{Object} */
+  function () {
+    return wrapPointer(_P2_dup_0(this.ptr), P2);
+  };
 
-P2.prototype['to_affine'] = P2.prototype.to_affine = /** @this{Object} */
-function()
-{   return wrapPointer(_P2_to_affine_0(this.ptr), P2_Affine);   };;
+P2.prototype['to_affine'] = P2.prototype.to_affine =
+  /** @this{Object} */
+  function () {
+    return wrapPointer(_P2_to_affine_0(this.ptr), P2_Affine);
+  };
 
-P2.prototype['serialize'] = P2.prototype.serialize = /** @this{Object} */
-function()
-{   var out = _P2_serialize_0(this.ptr);
-    return new Uint8Array(HEAPU8.subarray(out, out + 96*2));
-};;
+P2.prototype['serialize'] = P2.prototype.serialize =
+  /** @this{Object} */
+  function () {
+    var out = _P2_serialize_0(this.ptr);
+    return new Uint8Array(HEAPU8.subarray(out, out + 96 * 2));
+  };
 
-P2.prototype['compress'] = P2.prototype.compress = /** @this{Object} */
-function()
-{   var out = _P2_compress_0(this.ptr);
-    return new Uint8Array(HEAPU8.subarray(out, out + 48*2));
-};;
+P2.prototype['compress'] = P2.prototype.compress =
+  /** @this{Object} */
+  function () {
+    var out = _P2_compress_0(this.ptr);
+    return new Uint8Array(HEAPU8.subarray(out, out + 48 * 2));
+  };
 
-P2.prototype['on_curve'] = P2.prototype.on_curve = /** @this{Object} */
-function()
-{   return !!(_P2_on_curve_0(this.ptr));   };;
+P2.prototype['on_curve'] = P2.prototype.on_curve =
+  /** @this{Object} */
+  function () {
+    return !!_P2_on_curve_0(this.ptr);
+  };
 
-P2.prototype['in_group'] = P2.prototype.in_group = /** @this{Object} */
-function()
-{   return !!(_P2_in_group_0(this.ptr));   };;
+P2.prototype['in_group'] = P2.prototype.in_group =
+  /** @this{Object} */
+  function () {
+    return !!_P2_in_group_0(this.ptr);
+  };
 
-P2.prototype['is_inf'] = P2.prototype.is_inf = /** @this{Object} */
-function()
-{   return !!(_P2_is_inf_0(this.ptr));   };;
+P2.prototype['is_inf'] = P2.prototype.is_inf =
+  /** @this{Object} */
+  function () {
+    return !!_P2_is_inf_0(this.ptr);
+  };
 
-P2.prototype['is_equal'] = P2.prototype.is_equal = /** @this{Object} */
-function(p)
-{   if (p instanceof P2)
-        return !!(_P2_is_equal_1(this.ptr, p.ptr));
+P2.prototype['is_equal'] = P2.prototype.is_equal =
+  /** @this{Object} */
+  function (p) {
+    if (p instanceof P2) return !!_P2_is_equal_1(this.ptr, p.ptr);
     throw new Error(unsupported(p));
-};;
+  };
 
-P2.prototype['aggregate'] = P2.prototype.aggregate = /** @this{Object} */
-function(p)
-{   if (p instanceof P2_Affine)
-        _P2_aggregate_1(this.ptr, p.ptr);
-    else
-        throw new Error(unsupported(p));
-};;
+P2.prototype['aggregate'] = P2.prototype.aggregate =
+  /** @this{Object} */
+  function (p) {
+    if (p instanceof P2_Affine) _P2_aggregate_1(this.ptr, p.ptr);
+    else throw new Error(unsupported(p));
+  };
 
-P2.prototype['sign_with'] = P2.prototype.sign_with = /** @this{Object} */
-function(sk)
-{   if (sk instanceof SecretKey)
-        _P2_sign_with_1(this.ptr, sk.ptr);
-    else
-        throw new Error(unsupported(sk));
+P2.prototype['sign_with'] = P2.prototype.sign_with =
+  /** @this{Object} */
+  function (sk) {
+    if (sk instanceof SecretKey) _P2_sign_with_1(this.ptr, sk.ptr);
+    else throw new Error(unsupported(sk));
     return this;
-};;
+  };
 
-P2.prototype['hash_to'] = P2.prototype.hash_to = /** @this{Object} */
-function(msg, DST, aug)
-{   ensureCache.prepare();
+P2.prototype['hash_to'] = P2.prototype.hash_to =
+  /** @this{Object} */
+  function (msg, DST, aug) {
+    ensureCache.prepare();
     const [_msg, msg_len] = ensureAny(msg);
     DST = ensureString(DST);
     const [_aug, aug_len] = ensureAny(aug);
     _P2_hash_to_5(this.ptr, _msg, msg_len, DST, _aug, aug_len);
     return this;
-};;
+  };
 
-P2.prototype['encode_to'] = P2.prototype.encode_to = /** @this{Object} */
-function(msg, DST, aug)
-{   ensureCache.prepare();
+P2.prototype['encode_to'] = P2.prototype.encode_to =
+  /** @this{Object} */
+  function (msg, DST, aug) {
+    ensureCache.prepare();
     const [_msg, msg_len] = ensureAny(msg);
     DST = ensureString(DST);
     const [_aug, aug_len] = ensureAny(aug);
     _P2_encode_to_5(this.ptr, _msg, msg_len, DST, _aug, aug_len);
     return this;
-};;
+  };
 
-P2.prototype['mult'] = P2.prototype.mult = /** @this{Object} */
-function(scalar)
-{   if (scalar instanceof Scalar) {
-        _P2_mult_1(this.ptr, scalar.ptr);
+P2.prototype['mult'] = P2.prototype.mult =
+  /** @this{Object} */
+  function (scalar) {
+    if (scalar instanceof Scalar) {
+      _P2_mult_1(this.ptr, scalar.ptr);
     } else if (typeof scalar !== 'string') {
-        ensureCache.prepare();
-        const [_scalar, len] = ensureAny(scalar);
-        _P2_mult_2(this.ptr, _scalar, len*8);
+      ensureCache.prepare();
+      const [_scalar, len] = ensureAny(scalar);
+      _P2_mult_2(this.ptr, _scalar, len * 8);
     } else {
-        throw new Error(unsupported(scalar));
+      throw new Error(unsupported(scalar));
     }
     return this;
-};;
+  };
 
-P2.prototype['cneg'] = P2.prototype.cneg = /** @this{Object} */
-function(flag)
-{   _P2_cneg_1(this.ptr, !!flag); return this;   };;
-P2.prototype['neg'] = P2.prototype.neg = /** @this{Object} */
-function()
-{   _P2_cneg_1(this.ptr, true); return this;   };;
-
-P2.prototype['add'] = P2.prototype.add = /** @this{Object} */
-function(p)
-{   if (p instanceof P2)
-        _P2_add_1(this.ptr, p.ptr);
-    else if (p instanceof P2_Affine)
-        _P2_add_affine_1(this.ptr, p.ptr);
-    else
-        throw new Error(unsupported(p));
+P2.prototype['cneg'] = P2.prototype.cneg =
+  /** @this{Object} */
+  function (flag) {
+    _P2_cneg_1(this.ptr, !!flag);
     return this;
-};;
+  };
+P2.prototype['neg'] = P2.prototype.neg =
+  /** @this{Object} */
+  function () {
+    _P2_cneg_1(this.ptr, true);
+    return this;
+  };
 
-P2.prototype['dbl'] = P2.prototype.dbl = /** @this{Object} */
-function()
-{   _P2_dbl_0(this.ptr); return this;   };;
+P2.prototype['add'] = P2.prototype.add =
+  /** @this{Object} */
+  function (p) {
+    if (p instanceof P2) _P2_add_1(this.ptr, p.ptr);
+    else if (p instanceof P2_Affine) _P2_add_affine_1(this.ptr, p.ptr);
+    else throw new Error(unsupported(p));
+    return this;
+  };
 
-Module['G2'] = P2['generator'] = P2.generator =
-function()
-{   return wrapPointer(_P2_generator_0(), P2);   };;
+P2.prototype['dbl'] = P2.prototype.dbl =
+  /** @this{Object} */
+  function () {
+    _P2_dbl_0(this.ptr);
+    return this;
+  };
 
+Module['G2'] =
+  P2['generator'] =
+  P2.generator =
+    function () {
+      return wrapPointer(_P2_generator_0(), P2);
+    };

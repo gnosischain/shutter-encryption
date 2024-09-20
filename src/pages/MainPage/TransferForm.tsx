@@ -1,6 +1,11 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Input } from '@nextui-org/react';
-import { useChainId, usePrepareTransactionRequest, useSwitchChain, type UsePrepareTransactionRequestReturnType } from 'wagmi';
+import {
+  useChainId,
+  usePrepareTransactionRequest,
+  useSwitchChain,
+  type UsePrepareTransactionRequestReturnType,
+} from 'wagmi';
 import { type Hex, parseEther, isAddress } from 'viem';
 
 import { CHAINS, nativeXDaiToken } from '@/constants/chains';
@@ -9,24 +14,23 @@ import { Select } from '@/components/Select';
 import { useTokenBalance } from '@/hooks/useTokenBalance';
 import { encodeDataForTransfer } from '@/utils/eth';
 
-
 import { SubmitButton } from './SubmitButton';
 
 const mappedChains = mapChainsToOptions(CHAINS);
 const defaultToken = mapTokenToOption(CHAINS[0].tokens[0]);
 
 interface TransferFormProps {
-  submit: (tx: UsePrepareTransactionRequestReturnType, step: number) => void,
-  status: number,
-  isSubmitDisabled: boolean,
+  submit: (tx: UsePrepareTransactionRequestReturnType, step: number) => void;
+  status: number;
+  isSubmitDisabled: boolean;
 }
 
 export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormProps) => {
-  const [chain, setChain] = useState(mappedChains[0]);
   const [token, setToken] = useState(defaultToken);
-  const [amount, setAmount] = useState("0");
+  const [amount, setAmount] = useState('0');
   const [to, setTo] = useState('');
   const chainId = useChainId();
+  const [chain, setChain] = useState(mappedChains.find((c: { id: number }) => c.id === chainId));
   const { switchChain } = useSwitchChain();
 
   const { balance } = useTokenBalance({
@@ -43,7 +47,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
   }, [chain]);
 
   useEffect(() => {
-    const selectedChain = mappedChains.find((c: { id: number; }) => c.id === chainId);
+    const selectedChain = mappedChains.find((c: { id: number }) => c.id === chainId);
     if (selectedChain) {
       setChain(selectedChain);
     }
@@ -63,10 +67,11 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
     data,
     chainId: chain.id,
     to: token?.address === nativeXDaiToken.address ? to : token?.address,
-    value: token?.address === nativeXDaiToken.address ? parseEther(amount.toString()) : 0 as unknown as bigint,
+    value:
+      token?.address === nativeXDaiToken.address
+        ? parseEther(amount.toString())
+        : (0 as unknown as bigint),
   });
-
-  console.log(transactionData.data);
 
   const onSubmit = useCallback(() => {
     submit(transactionData, 0);
@@ -75,22 +80,11 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
   return (
     <div>
       <div className="my-4">
-        <Select
-          items={mappedChains}
-          selectedItem={chain}
-          handleChange={setChain}
-          title="Chain"
-
-        />
+        <Select items={mappedChains} selectedItem={chain} handleChange={setChain} title="Chain" />
       </div>
 
       <div className="my-4">
-        <Select
-          items={mappedTokens}
-          selectedItem={token}
-          handleChange={setToken}
-          title="Token"
-        />
+        <Select items={mappedTokens} selectedItem={token} handleChange={setToken} title="Token" />
       </div>
 
       <div>
@@ -105,7 +99,7 @@ export const TransferForm = ({ submit, status, isSubmitDisabled }: TransferFormP
 
         <div
           className="text-xs text-default-500 hover:cursor-pointer"
-          onClick={useCallback(() => setAmount(balance?.formatted || "0"), [balance])}
+          onClick={useCallback(() => setAmount(balance?.formatted || '0'), [balance])}
         >
           Balance: {balance ? balance.formatted : '0'}
         </div>

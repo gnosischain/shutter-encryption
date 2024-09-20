@@ -16,13 +16,16 @@ interface SelectProps {
 }
 
 export const Select = ({ items, handleChange, selectedItem, title }: SelectProps) => {
-  const handleSelectionChange = useCallback((e: any) => {
-    if (!e.target.value) return;
+  const handleSelectionChange = useCallback(
+    (e: any) => {
+      if (!e.target.value) return;
 
-    const item = items.find((item) => item.key == e.target.value);
+      const item = items.find((item) => item.key == e.target.value);
 
-    handleChange?.(item);
-  }, [items, handleChange]);
+      handleChange?.(item);
+    },
+    [items, handleChange],
+  );
 
   const selectedKeys = useMemo(() => [selectedItem?.key], [selectedItem]);
 

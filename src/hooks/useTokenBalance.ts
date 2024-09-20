@@ -59,12 +59,15 @@ export const useTokenBalance = ({ tokenAddress, enabled, chainId }: UseTokenBala
   };
 
   return {
-    balance: balance && decimals && symbol ? {
-      value: balance,
-      formatted: formatUnits(balance, decimals),
-      decimals,
-      symbol,
-    } : null,
+    balance:
+      balance && decimals && symbol
+        ? {
+            value: balance,
+            formatted: formatUnits(balance, decimals),
+            decimals,
+            symbol,
+          }
+        : null,
     ...rest,
-  }
+  };
 };

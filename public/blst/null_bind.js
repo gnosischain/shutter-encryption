@@ -1,9 +1,7 @@
-
 // Bindings utilities
 
 /** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
-function WrapperObject() {
-}
+function WrapperObject() {}
 WrapperObject.prototype = Object.create(WrapperObject.prototype);
 WrapperObject.prototype.constructor = WrapperObject;
 WrapperObject.prototype.__class__ = WrapperObject;
@@ -25,7 +23,7 @@ function wrapPointer(ptr, __class__) {
   if (ret) return ret;
   ret = Object.create((__class__ || WrapperObject).prototype);
   ret.ptr = ptr;
-  return cache[ptr] = ret;
+  return (cache[ptr] = ret);
 }
 Module['wrapPointer'] = wrapPointer;
 
@@ -68,9 +66,9 @@ Module['getClass'] = getClass;
 
 /** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
 var ensureCache = {
-  buffer: 0,  // the main buffer of temporary storage
-  size: 0,   // the size of buffer
-  pos: 0,    // the next free offset in buffer
+  buffer: 0, // the main buffer of temporary storage
+  size: 0, // the size of buffer
+  pos: 0, // the next free offset in buffer
   temps: [], // extra allocations
   needed: 0, // the total size we need next time
 
@@ -88,7 +86,8 @@ var ensureCache = {
       // clean up
       ensureCache.needed = 0;
     }
-    if (!ensureCache.buffer) { // happens first time, or when we need to grow
+    if (!ensureCache.buffer) {
+      // happens first time, or when we need to grow
       ensureCache.size += 128; // heuristic, avoid many small grow events
       ensureCache.buffer = Module['_webidl_malloc'](ensureCache.size);
       assert(ensureCache.buffer);
@@ -186,7 +185,9 @@ function ensureFloat64(value) {
 // Interface: VoidPtr
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
-function VoidPtr() { throw "cannot construct a VoidPtr, no constructor in IDL" }
+function VoidPtr() {
+  throw 'cannot construct a VoidPtr, no constructor in IDL';
+}
 VoidPtr.prototype = Object.create(WrapperObject.prototype);
 VoidPtr.prototype.constructor = VoidPtr;
 VoidPtr.prototype.__class__ = VoidPtr;
@@ -194,7 +195,7 @@ VoidPtr.__cache__ = {};
 Module['VoidPtr'] = VoidPtr;
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
-VoidPtr.prototype['__destroy__'] = VoidPtr.prototype.__destroy__ = function() {
+VoidPtr.prototype['__destroy__'] = VoidPtr.prototype.__destroy__ = function () {
   var self = this.ptr;
   _emscripten_bind_VoidPtr___destroy___0(self);
 };

@@ -7,11 +7,13 @@ export const useCreateWalletClient = () => {
 
   return useMemo(() => {
     // @ts-expect-error - avoid error if window.ethereum is not defined
-    return window.ethereum ? createWalletClient({
-      account: address,
-      chain,
-      // @ts-expect-error - we know that window.ethereum is defined
-      transport: custom(window.ethereum!),
-    }) : null;
+    return window.ethereum
+      ? createWalletClient({
+          account: address,
+          chain,
+          // @ts-expect-error - we know that window.ethereum is defined
+          transport: custom(window.ethereum!),
+        })
+      : null;
   }, [address, chain]);
-}
+};

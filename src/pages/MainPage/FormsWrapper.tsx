@@ -1,13 +1,13 @@
-import { Tabs, Tab } from "@nextui-org/react";
-import { useState, useCallback, useEffect } from "react";
-import { type Hash } from "viem";
+import { Tabs, Tab } from '@nextui-org/react';
+import { useState, useCallback, useEffect } from 'react';
+import { type Hash } from 'viem';
 
-import { useSignTransaction } from "@/hooks/useSignTransaction";
-import { useShutterEncryption } from "@/hooks/useShutterEncryption";
+import { useSignTransaction } from '@/hooks/useSignTransaction';
+import { useShutterEncryption } from '@/hooks/useShutterEncryption';
 
-import { TransferForm } from "./TransferForm";
-import { AdvancedForm } from "./AdvancedForm";
-import { ProgressInfoCard } from "./ProgressInfoCard";
+import { TransferForm } from './TransferForm';
+import { AdvancedForm } from './AdvancedForm';
+import { ProgressInfoCard } from './ProgressInfoCard';
 
 // status = 0 -> sign
 // status = 1 -> signing
@@ -35,7 +35,7 @@ export const FormsWrapper = () => {
         setStatus(0);
         return;
       }
-      
+
       if (!tx) return;
 
       setCurrentTx(tx);
@@ -48,7 +48,7 @@ export const FormsWrapper = () => {
         setStatus(5); // Start the submission process
       }
     },
-    [status]
+    [status],
   );
 
   useEffect(() => {
@@ -106,7 +106,7 @@ export const FormsWrapper = () => {
   return (
     <div className="w-full flex justify-center py-8">
       <div className="w-96 p-4">
-        <Tabs fullWidth color="primary" classNames={{ tab: "bg-white" }}>
+        <Tabs fullWidth color="primary" classNames={{ tab: 'bg-white' }}>
           <Tab className="focus:outline-none" key="transfer" title="Transfer">
             <TransferForm
               isSubmitDisabled={isEncryptionParamsLoading}
